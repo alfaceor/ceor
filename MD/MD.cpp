@@ -14,9 +14,19 @@
 #include "Conformation.h"
 
 int main(void) {
-	Conformation polimero;
-	polimero.nextStep();
-	printf("positions polimero\n");
-	polimero.print_r();
+	Conformation protein;
+	/**
+	 * TODO:
+	 * -Calculate the distance matrix. deltaR a triangular matrix.
+	 * -Calculate the force (aceleration) to change the velocity
+	 * -Then change the position.
+	 * */
+	// Calculate
+	protein.nextStep();
+	printf("protein coordenates\n");
+	protein.print_r();
+
+	/********************/
+
 	return EXIT_SUCCESS;
 }
