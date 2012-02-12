@@ -72,7 +72,6 @@ void Conformation::Force_cc(double epsilon, double q){
 		}else{
 			// TODO: Logarithmic force
 
-			force[k][x] += 2*epsilon*(deltaX[k-1][k]/deltaR[k-1][k])*(1/((q/deltaR[k-1][k])-(deltaR[k-1][k]/q)));
 		}
 
 		// XXX: k and k+1
@@ -86,7 +85,6 @@ void Conformation::Force_cc(double epsilon, double q){
 		}else{
 			// TODO: Logarithmic force
 
-			force[k][x] += 2*epsilon*(deltaX[k-1][k]/deltaR[k-1][k])*(1/((q/deltaR[k-1][k])-(deltaR[k-1][k]/q)));
 		}
 
 
