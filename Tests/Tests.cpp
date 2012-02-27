@@ -18,7 +18,7 @@
 gsl_rng *r1,*r2;
 
 int main(int argc, char* argv[]) {
-	const int N = 13; // = atoi(argv[1]);
+	const int N = 9; // = atoi(argv[1]);
 	const gsl_rng_type * T;
 	T = gsl_rng_default;
 	r1 = gsl_rng_alloc(T);
@@ -28,8 +28,8 @@ int main(int argc, char* argv[]) {
 //	double dx=0.025;
 //	double x;
 	int time=0;
-	int total_time=50;
-	double dt=0.01;
+	int total_time=80;
+	double dt=0.001;
 	double total_force[N][3];
 	double total_force_old[N][3];
 	double chain_r[N][3];		// monomer positions
@@ -37,40 +37,43 @@ int main(int argc, char* argv[]) {
 
 	int    hydro[N];	// = {1,1,-1,1,-1,-1,1,1,1,-1,1,1,1};
 	double deltaR2[N][N];
-	double epsi=1.0, Ec=-1.0, q=0.1;
+	double epsi=1.0, Ec=-0.7, q=0.2;
 	double sigma = 1.0;	// diametro
 
 
 	//----- Initial positions and velocities
 	double random;
 	for (int i=0;i<N;i++){
-		for (int d=0;d<N;d++){
+		for (int d=0;d<3;d++){
 			// vector force
 			total_force[i][d]=0;
 			// vector positions
-			random = 0.001*gsl_rng_uniform_pos(r1);
-			chain_r[i][d] = random;
-			// vector velocities
-			random = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
-			chain_v[i][d] = random;
+			if (d==0){
+				random = 0.001*gsl_rng_uniform_pos(r1);
+				chain_r[i][d] = random;
+				// vector velocities
+				random = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
+				chain_v[i][d] = random;
+			}
 		}
 		chain_r[i][0] += sigma*i;
+		printf("%f\n",chain_r[i][0]);
 	}
 
 	// FIXME: Nose pq en el bucle no puede inicializar la variable hydro
 	hydro[0]  =  1;
 	hydro[1]  =  1;
 	hydro[2]  = -1;
-	hydro[3]  =  1;
-	hydro[4]  = -1;
+	hydro[3]  = -1;
+	hydro[4]  =  1;
 	hydro[5]  = -1;
 	hydro[6]  =  1;
-	hydro[7]  =  1;
+	hydro[7]  = -1;
 	hydro[8]  =  1;
-	hydro[9]  = -1;
-	hydro[10] =  1;
-	hydro[11] =  1;
-	hydro[12] =  1;
+//	hydro[9]  = -1;
+//	hydro[10] =  1;
+//	hydro[11] =  1;
+//	hydro[12] =  1;
 
 	/****************************************/
 
@@ -87,26 +90,26 @@ fp = fopen("test.pdb", "w");
 			print_pdb_line(fp,i+1,chain_r[i][0],chain_r[i][1],chain_r[i][2],resname);
 		}
 
-	//----- Actualizacion de las posiciones
-	for (int i=0;i<N;i++){
-		for (int d=0;d<3;d++){
-			// r(t+dt) = r(t) + dt*v(t)+0.5*(dt*dt)*a(t)
-			chain_r[i][d] += dt*chain_v[i][d] + 0.5*(dt*dt)*total_force[i][d];
-			total_force_old[i][d]= total_force[i][d];
-		}
-	}
-
 	//----- Calculo de los r_ij^2
-	for (int k=0; k<N-1; k++){
-		for (int l=1; l<N; l++){
-			deltaR2[k][l] = 0;
+		printf("----------- r**2 -----------\n");
+	double auxdelta;
+	for (int k=0; k<N; k++){
+		for (int l=0; l<N; l++){
+			deltaR2[k][l] = 0.0;
 			for (int d=0;d<3;d++){
-				deltaR2[k][l] += (chain_r[k][d]-chain_r[l][d])*(chain_r[k][d]-chain_r[l][d]);
+				auxdelta=(chain_r[k][d]-chain_r[l][d]);
+				deltaR2[k][l] += auxdelta*auxdelta;
+//				printf("%d=%f\t",d,auxdelta);
 			}
+//			printf("-> %d%d\t",k,l);
 			deltaR2[l][k] = deltaR2[k][l];
 		}
-		deltaR2[k][k] = 0;
+		printf("%f\n",deltaR2[k][0]);
+//		printf("\n");
+//		deltaR2[k][k] = 0.0;
 	}
+	printf("*******************\n");
+
 //	for (int w=0;w<N;w++){
 //		for (int n=0;n<N;n++){
 //			printf("%f\t",deltaR2[w][n]);
@@ -114,12 +117,11 @@ fp = fopen("test.pdb", "w");
 //		printf("\n");
 //	}
 
-
 	double auxvar;
 	double auxforce[3];
 
 	//----- Calculo de las fuerzas sobre las particulas.
-	for (int m=0;m<N-1;m++){
+	for (int m=0;m<N-2;m++){
 		auxvar = force_cc_r(epsi,q,deltaR2[m][m+1]);
 		for (int d=0;d<3;d++){
 			auxforce[d] = auxvar*(chain_r[m][d]-chain_r[m+1][d]);
@@ -136,6 +138,16 @@ fp = fopen("test.pdb", "w");
 			}
 		}
 	}
+
+	//----- Actualizacion de las posiciones
+	for (int i=0;i<N;i++){
+		for (int d=0;d<3;d++){
+			// r(t+dt) = r(t) + dt*v(t)+0.5*(dt*dt)*a(t)
+			chain_r[i][d] += dt*chain_v[i][d] + 0.5*(dt*dt)*total_force[i][d];
+			total_force_old[i][d]= total_force[i][d];
+		}
+	}
+
 	//----- Calcular la fuerza nuevamente y velocidades.
 	for (int i=0;i<N;i++){
 		for(int d=0;d<3;d++){

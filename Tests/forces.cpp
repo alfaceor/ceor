@@ -54,7 +54,7 @@ double force_cc_r(double epsilon, double q, double r2){
 	}else{
 		double r   = sqrt(r2);
 		double aux = (r-1)/q;
-		force = ( 2*(epsilon/(q*r))/((1.0/aux - aux)) );
+		force = ( 2*(epsilon/r)/((1.0/aux - aux)) );
 	}
 	return force;
 }
@@ -62,7 +62,10 @@ double force_cc_r(double epsilon, double q, double r2){
 double force_att_r(double epsilon, double Ec, double r2){
 	double r6 = 1.0/(r2*r2*r2);
 	double r8 = r6*(1.0/(r2));
-	return (-12*epsilon*Ec*r8*(r6-1));
+	if(r2<1)
+		return (-12*epsilon*Ec*r8*(r6-1));
+	else
+		return 0;
 }
 
 double force_rep_r(double epsilon, double r2){
