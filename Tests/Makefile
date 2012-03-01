@@ -1,4 +1,4 @@
-CXXFLAGS =	-O2 -g -pg -Wall -fmessage-length=0
+CXXFLAGS =	-g -p -Wall -fmessage-length=0
 
 OBJS =		Tests.o forces.o pdb_utils.o
 
