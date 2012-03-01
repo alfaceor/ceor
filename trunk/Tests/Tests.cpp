@@ -15,21 +15,46 @@
 #include "pdb_utils.h"
 
 
-gsl_rng *r1,*r2;
 
-int main(int argc, char* argv[]) {
-	const int N = 9; // = atoi(argv[1]);
+
+void InitialValues(double *total_force,double *chain_r, double *chain_v, double sigma,const int N){
+	gsl_rng *r1,*r2;
 	const gsl_rng_type * T;
 	T = gsl_rng_default;
 	r1 = gsl_rng_alloc(T);
 	r2 = gsl_rng_alloc(T);
+	double randomaux;
+	for (int i=0;i<N;i++){
+		for (int d=0;d<3;d++){
+			// vector force
+			total_force[i*N+d]=0;
+			// vector positions and velocities
+			chain_r[i*N+d] = 0.0;
+			chain_v[i*N+d] = 0.0;
+			if (d==0){
+				randomaux = 0.001*gsl_rng_uniform_pos(r1);
+				chain_r[i*N+d] = randomaux;
+				// vector velocities
+				randomaux = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
+				chain_v[i*N+d] = randomaux;
+			}
+		}
+		chain_r[i*N+0] += sigma*i;
+		printf("%f\t%f\n",chain_r[i*N+0],chain_v[i*N+0]);
+	}
+
+}
+
+int main(int argc, char* argv[]) {
+	const int N = 9; // = atoi(argv[1]);
+
 
 	// phi_cc function
 //	double dx=0.025;
 //	double x;
 	int time=0;
 	int total_time= 112;//atoi(argv[1]);
-	double dt=0.001;
+	double dt=0.0001;
 	double total_force[N][3];
 	double total_force_old[N][3];
 	double chain_r[N][3];		// monomer positions
@@ -42,25 +67,7 @@ int main(int argc, char* argv[]) {
 
 
 	//----- Initial positions and velocities
-	double randomaux;
-	for (int i=0;i<N;i++){
-		for (int d=0;d<3;d++){
-			// vector force
-			total_force[i][d]=0;
-			// vector positions and velocities
-			chain_r[i][d] = 0.0;
-			chain_v[i][d] = 0.0;
-			if (d==0){
-				randomaux = 0.001*gsl_rng_uniform_pos(r1);
-				chain_r[i][d] = randomaux;
-				// vector velocities
-				randomaux = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
-				chain_v[i][d] = randomaux;
-			}
-		}
-		chain_r[i][0] += sigma*i;
-		printf("%f\n",chain_r[i][0]);
-	}
+	InitialValues(total_force[0],chain_r[0], chain_v[0],sigma, N);
 
 	// FIXME: Nose pq en el bucle no puede inicializar la variable hydro
 	hydro[0]  =  1;
@@ -93,24 +100,24 @@ fp = fopen("test.pdb", "w");
 		}
 
 	//----- Calculo de los r_ij^2
-		printf("----------- r**2 -----------\n");
+//		printf("----------- r**2 -----------\n");
 	double auxdelta;
 	for (int k=0; k<N; k++){
 		for (int l=0; l<N; l++){
 			deltaR2[k][l] = 0.0;
 			for (int d=0;d<3;d++){
-				auxdelta=(chain_r[k][d]-chain_r[l][d]);
+				auxdelta = (chain_r[k][d]-chain_r[l][d]);
 				deltaR2[k][l] += auxdelta*auxdelta;
 //				printf("%d=%f\t",d,auxdelta);
 			}
 //			printf("-> %d%d\t",k,l);
 			deltaR2[l][k] = deltaR2[k][l];
 		}
-		printf("%f\n",deltaR2[k][0]);
+//		printf("%f\n",deltaR2[k][0]);
 //		printf("\n");
 //		deltaR2[k][k] = 0.0;
 	}
-	printf("*******************\n");
+//	printf("*******************\n");
 
 //	for (int w=0;w<N;w++){
 //		for (int n=0;n<N;n++){
@@ -159,8 +166,6 @@ fp = fopen("test.pdb", "w");
 	}
 
 	//----- Print data.
-
-
 	fprintf(fp,"ENDMDL\n");
 
 	time++;
