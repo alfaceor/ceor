@@ -54,8 +54,8 @@ double force_cc_r(double epsilon, double q, double r2){
 	}else{
 		double r   = sqrt(r2);
 		double aux = (r-1)/q;
-		double denominador = (q*(1.0/aux - aux));
-		force =  -2*(epsilon/r)/denominador;
+		double denominador = (r*q*(1.0/aux - aux));
+		force =  -2*epsilon/denominador;
 	}
 	return force;
 }
