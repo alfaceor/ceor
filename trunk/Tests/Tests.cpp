@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 //	double dx=0.025;
 //	double x;
 	int time=0;
-	int total_time=80;
+	int total_time= 112;//atoi(argv[1]);
 	double dt=0.001;
 	double total_force[N][3];
 	double total_force_old[N][3];
@@ -42,18 +42,20 @@ int main(int argc, char* argv[]) {
 
 
 	//----- Initial positions and velocities
-	double random;
+	double randomaux;
 	for (int i=0;i<N;i++){
 		for (int d=0;d<3;d++){
 			// vector force
 			total_force[i][d]=0;
-			// vector positions
+			// vector positions and velocities
+			chain_r[i][d] = 0.0;
+			chain_v[i][d] = 0.0;
 			if (d==0){
-				random = 0.001*gsl_rng_uniform_pos(r1);
-				chain_r[i][d] = random;
+				randomaux = 0.001*gsl_rng_uniform_pos(r1);
+				chain_r[i][d] = randomaux;
 				// vector velocities
-				random = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
-				chain_v[i][d] = random;
+				randomaux = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
+				chain_v[i][d] = randomaux;
 			}
 		}
 		chain_r[i][0] += sigma*i;
@@ -128,15 +130,15 @@ fp = fopen("test.pdb", "w");
 			total_force[m][d]	+=  auxforce[d];
 			total_force[m+1][d]	+= -auxforce[d];
 		}
-
-		for(int i=m+2;i<N;i++){
-			auxvar = force_hydro(epsi,Ec,deltaR2[m][i],hydro[m]+hydro[i]);
-			for (int d=0;d<3;d++){
-				auxforce[d] = auxvar*(chain_r[m][d]-chain_r[i][d]);
-				total_force[m][d] +=  auxforce[d];
-				total_force[i][d] += -auxforce[d];
-			}
-		}
+//
+//		for(int i=m+2;i<N;i++){
+//			auxvar = force_hydro(epsi,Ec,deltaR2[m][i],hydro[m]+hydro[i]);
+//			for (int d=0;d<3;d++){
+//				auxforce[d] = auxvar*(chain_r[m][d]-chain_r[i][d]);
+//				total_force[m][d] +=  auxforce[d];
+//				total_force[i][d] += -auxforce[d];
+//			}
+//		}
 	}
 
 	//----- Actualizacion de las posiciones
