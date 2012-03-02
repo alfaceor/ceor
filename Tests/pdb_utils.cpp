@@ -52,7 +52,7 @@ HETATM 8242  O4  SO4 A2001      10.932 -15.073 -13.100  1.00 49.91           O
 
 #include "pdb_utils.h"
 
-void print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *resName){
+void print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *resName,double tempFactor){
 	char recordname[]="HETATM";	// 1 - 6        Record name    "HETATM"
 //	int  serial    =1;						// 7 - 11       Integer   Atom serial number.
 	char name    []="    ";		//13 - 16       Atom      Atom name.
@@ -65,7 +65,7 @@ void print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *resN
 //	double y       = -2.555;
 //	double z       = -29.045;
 	double occupancy	=  1.00;
-	double tempFactor	= 27.36;
+//	double tempFactor	= 27.36;
 	char element []="  ";
 	char charge  []="  ";
 
