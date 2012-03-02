@@ -33,7 +33,7 @@ void InitialValues(double *total_force,double *chain_r, double *chain_v, double 
 				randomaux = 0.001*gsl_rng_uniform_pos(r1);
 				chain_r[i*DIM+d] = randomaux;
 				// vector velocities
-				randomaux = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
+				randomaux = 0.05*(2*gsl_ran_gaussian(r2,sigma) - 1);
 				chain_v[i*DIM+d] = randomaux;
 			}
 		}
@@ -73,10 +73,10 @@ int main(int argc, char* argv[]) {
 //	double dx=0.025;
 //	double x;
 	int time=0;
-	int total_time= 112;//atoi(argv[1]);
+	int total_time= 3000;//atoi(argv[1]);
 	double dt=0.001;
 	double total_force[N][DIM];
-	double total_force_old[N][DIM];
+	double total_force_old[N][DIM]={0};
 	double chain_r[N][DIM];		// monomer positions
 	double chain_v[N][DIM];		// monomer velocities
 
@@ -116,42 +116,58 @@ fp = fopen("test.pdb", "w");
 			if(hydro[i] == 1)	resname[2]='C';
 			else				resname[2]='N';
 	//		printf("\n--- %d --- %s \n",hydro[i],resname);
-			print_pdb_line(fp,i+1,chain_r[i][0],chain_r[i][1],chain_r[i][2],resname);
+			print_pdb_line(fp,i+1,chain_r[i][0],chain_r[i][1],chain_r[i][2],resname,chain_v[i][0]);
 		}
 
-	//----- Calculo de los r_ij^2
-	CalculateR2(deltaR2[0],chain_r[0], N, DIM);
+
 
 	double auxvar;
 	double auxforce[3];
-
-	//----- Calculo de las fuerzas sobre las particulas.
-	for (int m=0;m<N-1;m++){
-		auxvar = force_cc_r(epsi,q,deltaR2[m][m+1]);
-		for (int d=0;d<3;d++){
-			auxforce[d] = auxvar*(chain_r[m][d]-chain_r[m+1][d]);
-			total_force[m][d]	+=  auxforce[d];
-			total_force[m+1][d]	+= -auxforce[d];
-		}
-
-//		FIXME: las fuerzas hidrophobicas o hidrofilicas
-//		for(int i=m+2;i<N;i++){
-//			auxvar = force_hydro(epsi,Ec,deltaR2[m][i],hydro[m]+hydro[i]);
-//			for (int d=0;d<3;d++){
-//				auxforce[d] = auxvar*(chain_r[m][d]-chain_r[i][d]);
-//				total_force[m][d] +=  auxforce[d];
-//				total_force[i][d] += -auxforce[d];
-//			}
-//		}
-	}
 
 	//----- Actualizacion de las posiciones
 	for (int i=0;i<N;i++){
 		for (int d=0;d<3;d++){
 			// r(t+dt) = r(t) + dt*v(t)+0.5*(dt*dt)*a(t)
 			chain_r[i][d] += dt*chain_v[i][d] + 0.5*(dt*dt)*total_force[i][d];
-			chain_v[i][d] += 0.5*dt*(total_force[i][d]+total_force_old[i][d]);
 			total_force_old[i][d]= total_force[i][d];
+		}
+	}
+
+	//----- Calculo de los r_ij^2
+	CalculateR2(deltaR2[0],chain_r[0], N, DIM);
+
+	// limpiar la variable fuerza.
+	for(int i=0;i<N;i++){
+		for(int d=0;d<DIM;d++){
+			total_force[i][d]=0;
+		}
+	}
+
+	//----- Calculo de las fuerzas sobre las particulas.
+	for (int m=0;m<N-1;m++){
+		auxvar = force_cc_r(epsi,q,deltaR2[m][m+1]);
+		for (int d=0;d<DIM;d++){
+			auxforce[d] = auxvar*(chain_r[m][d]-chain_r[m+1][d]);
+			total_force[m][d]	+=  auxforce[d];
+			total_force[m+1][d]	+= -auxforce[d];
+//			printf("%f\t%f",);
+		}
+
+//		FIXME: las fuerzas hidrophobicas o hidrofilicas
+		for(int i=m+2;i<N;i++){
+			auxvar = force_hydro(epsi,Ec,deltaR2[m][i],hydro[m]+hydro[i]);
+			for (int d=0;d<3;d++){
+				auxforce[d] = auxvar*(chain_r[m][d]-chain_r[i][d]);
+				total_force[m][d] +=  auxforce[d];
+				total_force[i][d] += -auxforce[d];
+			}
+		}
+	}
+
+	//----- Actualizacion de las velocidades
+	for (int i=0;i<N;i++){
+		for (int d=0;d<3;d++){
+			chain_v[i][d] += 0.5*dt*(total_force[i][d]+total_force_old[i][d]);
 		}
 	}
 
@@ -161,5 +177,5 @@ fp = fopen("test.pdb", "w");
 	time++;
   }
 	fclose(fp);
-	return EXIT_SUCCESS;
+	return 0;
 }

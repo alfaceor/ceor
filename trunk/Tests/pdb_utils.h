@@ -11,6 +11,6 @@
 #include <stdio.h>
 
 
-void print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *resName);
+void print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *resName,double tempFactor);
 
 #endif /* PDB_UTILS_H_ */
