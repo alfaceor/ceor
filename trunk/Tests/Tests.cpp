@@ -15,9 +15,7 @@
 #include "pdb_utils.h"
 
 
-
-
-void InitialValues(double *total_force,double *chain_r, double *chain_v, double sigma,const int N){
+void InitialValues(double *total_force,double *chain_r, double *chain_v, double sigma,const int N, const int DIM){
 	gsl_rng *r1,*r2;
 	const gsl_rng_type * T;
 	T = gsl_rng_default;
@@ -27,38 +25,60 @@ void InitialValues(double *total_force,double *chain_r, double *chain_v, double 
 	for (int i=0;i<N;i++){
 		for (int d=0;d<3;d++){
 			// vector force
-			total_force[i*N+d]=0;
+			total_force[i*DIM+d]=0;
 			// vector positions and velocities
-			chain_r[i*N+d] = 0.0;
-			chain_v[i*N+d] = 0.0;
+			chain_r[i*DIM+d] = 0.0;
+			chain_v[i*DIM+d] = 0.0;
 			if (d==0){
 				randomaux = 0.001*gsl_rng_uniform_pos(r1);
-				chain_r[i*N+d] = randomaux;
+				chain_r[i*DIM+d] = randomaux;
 				// vector velocities
 				randomaux = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
-				chain_v[i*N+d] = randomaux;
+				chain_v[i*DIM+d] = randomaux;
 			}
 		}
-		chain_r[i*N+0] += sigma*i;
-		printf("%f\t%f\n",chain_r[i*N+0],chain_v[i*N+0]);
+		chain_r[i*DIM+0] += sigma*i;
+//		printf("%f\t%f\n",chain_r[i*N+0],chain_v[i*N+0]);
 	}
+
+}
+
+void CalculateR2(double *deltaR2,double *chain_r, const int N, const int DIM){
+//		printf("----------- r**2 -----------\n");
+	double auxdelta;
+	for (int k=0; k<N; k++){
+		for (int l=0; l<N; l++){
+			deltaR2[k*N+l] = 0.0;
+			for (int d=0;d<DIM;d++){
+				auxdelta = (chain_r[k*DIM+d]-chain_r[l*DIM+d]);
+				deltaR2[k*N+l] += auxdelta*auxdelta;
+//				printf("%d=%f\t",d,auxdelta);
+			}
+//			printf("-> %d%d\t",k,l);
+			deltaR2[l*N+k] = deltaR2[k*N+l];
+		}
+//		printf("%f\n",deltaR2[k][0]);
+//		printf("\n");
+//		deltaR2[k][k] = 0.0;
+	}
+//	printf("*******************\n");
 
 }
 
 int main(int argc, char* argv[]) {
 	const int N = 9; // = atoi(argv[1]);
-
+	const int DIM = 3;
 
 	// phi_cc function
 //	double dx=0.025;
 //	double x;
 	int time=0;
 	int total_time= 112;//atoi(argv[1]);
-	double dt=0.0001;
-	double total_force[N][3];
-	double total_force_old[N][3];
-	double chain_r[N][3];		// monomer positions
-	double chain_v[N][3];		// monomer velocities
+	double dt=0.001;
+	double total_force[N][DIM];
+	double total_force_old[N][DIM];
+	double chain_r[N][DIM];		// monomer positions
+	double chain_v[N][DIM];		// monomer velocities
 
 	int    hydro[N];	// = {1,1,-1,1,-1,-1,1,1,1,-1,1,1,1};
 	double deltaR2[N][N];
@@ -67,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 
 	//----- Initial positions and velocities
-	InitialValues(total_force[0],chain_r[0], chain_v[0],sigma, N);
+	InitialValues(total_force[0], chain_r[0], chain_v[0],sigma, N, DIM);
 
 	// FIXME: Nose pq en el bucle no puede inicializar la variable hydro
 	hydro[0]  =  1;
@@ -100,44 +120,21 @@ fp = fopen("test.pdb", "w");
 		}
 
 	//----- Calculo de los r_ij^2
-//		printf("----------- r**2 -----------\n");
-	double auxdelta;
-	for (int k=0; k<N; k++){
-		for (int l=0; l<N; l++){
-			deltaR2[k][l] = 0.0;
-			for (int d=0;d<3;d++){
-				auxdelta = (chain_r[k][d]-chain_r[l][d]);
-				deltaR2[k][l] += auxdelta*auxdelta;
-//				printf("%d=%f\t",d,auxdelta);
-			}
-//			printf("-> %d%d\t",k,l);
-			deltaR2[l][k] = deltaR2[k][l];
-		}
-//		printf("%f\n",deltaR2[k][0]);
-//		printf("\n");
-//		deltaR2[k][k] = 0.0;
-	}
-//	printf("*******************\n");
-
-//	for (int w=0;w<N;w++){
-//		for (int n=0;n<N;n++){
-//			printf("%f\t",deltaR2[w][n]);
-//		}
-//		printf("\n");
-//	}
+	CalculateR2(deltaR2[0],chain_r[0], N, DIM);
 
 	double auxvar;
 	double auxforce[3];
 
 	//----- Calculo de las fuerzas sobre las particulas.
-	for (int m=0;m<N-2;m++){
+	for (int m=0;m<N-1;m++){
 		auxvar = force_cc_r(epsi,q,deltaR2[m][m+1]);
 		for (int d=0;d<3;d++){
 			auxforce[d] = auxvar*(chain_r[m][d]-chain_r[m+1][d]);
 			total_force[m][d]	+=  auxforce[d];
 			total_force[m+1][d]	+= -auxforce[d];
 		}
-//
+
+//		FIXME: las fuerzas hidrophobicas o hidrofilicas
 //		for(int i=m+2;i<N;i++){
 //			auxvar = force_hydro(epsi,Ec,deltaR2[m][i],hydro[m]+hydro[i]);
 //			for (int d=0;d<3;d++){
@@ -153,15 +150,8 @@ fp = fopen("test.pdb", "w");
 		for (int d=0;d<3;d++){
 			// r(t+dt) = r(t) + dt*v(t)+0.5*(dt*dt)*a(t)
 			chain_r[i][d] += dt*chain_v[i][d] + 0.5*(dt*dt)*total_force[i][d];
-			total_force_old[i][d]= total_force[i][d];
-		}
-	}
-
-	//----- Calcular la fuerza nuevamente y velocidades.
-	for (int i=0;i<N;i++){
-		for(int d=0;d<3;d++){
-			// v(t+dt) = v(t) + 0.5*dt*(a(t)+a(t+dt))
 			chain_v[i][d] += 0.5*dt*(total_force[i][d]+total_force_old[i][d]);
+			total_force_old[i][d]= total_force[i][d];
 		}
 	}
 
