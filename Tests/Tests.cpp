@@ -14,6 +14,29 @@
 #include "forces.h"
 #include "pdb_utils.h"
 
+/**
+ * TODO: hacer una funcion para que pueda leer data desde un archivo,
+ * esta es la prueba para poder leer desde un archivo pdb
+ * */
+void InitialValues2(double *total_force,double *chain_r, double *chain_v, double sigma,const int N, const int DIM){
+	FILE *fp;
+	fp = fopen("initial_data.dat", "w+");
+	// leer las posiciones, velocidades iniciales y la hydrophobicidad.
+	for (int i=0;i<N;i++){
+
+		for(int d=0;d<DIM;d++){
+//			FIXME: COMO LEER LA DATA PARA UN ARRAY
+			fscanf(fp,"%f",chain_r + i*DIM+d);
+		}
+		for(int d=0;d<DIM;d++){
+			fscanf(fp,"%f",chain_r + i*DIM+d);
+			total_force[i*DIM+d]=0.0;
+		}
+//		hydro[i]=1;
+	}
+
+	fclose(fp);
+}
 
 void InitialValues(double *total_force,double *chain_r, double *chain_v, double sigma,const int N, const int DIM){
 	gsl_rng *r1,*r2;
@@ -32,10 +55,10 @@ void InitialValues(double *total_force,double *chain_r, double *chain_v, double 
 			if (d==0){
 				randomaux = 0.001*gsl_rng_uniform_pos(r1);
 				chain_r[i*DIM+d] = randomaux;
-				// vector velocities
-				randomaux = 0.05*(2*gsl_ran_gaussian(r2,sigma) - 1);
-				chain_v[i*DIM+d] = randomaux;
 			}
+			// vector velocities in any direction.
+			randomaux = 0.5*(2*gsl_ran_gaussian(r2,sigma) - 1);
+			chain_v[i*DIM+d] = randomaux;
 		}
 		chain_r[i*DIM+0] += sigma*i;
 //		printf("%f\t%f\n",chain_r[i*N+0],chain_v[i*N+0]);
@@ -66,14 +89,14 @@ void CalculateR2(double *deltaR2,double *chain_r, const int N, const int DIM){
 }
 
 int main(int argc, char* argv[]) {
-	const int N = 9; // = atoi(argv[1]);
+	const int N = 13; // = atoi(argv[1]);
 	const int DIM = 3;
 
 	// phi_cc function
 //	double dx=0.025;
 //	double x;
 	int time=0;
-	int total_time= 3000;//atoi(argv[1]);
+	int total_time= 200000;//atoi(argv[1]);
 	double dt=0.001;
 	double total_force[N][DIM];
 	double total_force_old[N][DIM]={0};
@@ -99,25 +122,27 @@ int main(int argc, char* argv[]) {
 	hydro[6]  =  1;
 	hydro[7]  = -1;
 	hydro[8]  =  1;
-//	hydro[9]  = -1;
-//	hydro[10] =  1;
-//	hydro[11] =  1;
-//	hydro[12] =  1;
+	hydro[9]  = -1;
+	hydro[10] =  1;
+	hydro[11] =  1;
+	hydro[12] =  1;
 
 	/****************************************/
 
 FILE *fp;
 fp = fopen("test.pdb", "w");
   while(time<total_time){
-
+	  if(time%100 == 0){
 		fprintf(fp,"MODEL\t%d\n",time);
-		char resname[]="   ";
+		char name[]="    ";
 		for (int i=0;i<N;i++){
-			if(hydro[i] == 1)	resname[2]='C';
-			else				resname[2]='N';
+			if(hydro[i] == 1){	name[0]='Z';name[1]='n';}
+			else{				name[0]='N';name[1]=' ';}
 	//		printf("\n--- %d --- %s \n",hydro[i],resname);
-			print_pdb_line(fp,i+1,chain_r[i][0],chain_r[i][1],chain_r[i][2],resname,chain_v[i][0]);
+			print_pdb_line(fp,i+1,chain_r[i][0],chain_r[i][1],chain_r[i][2],name,chain_v[i][0]);
 		}
+	  }
+
 
 
 
@@ -172,7 +197,8 @@ fp = fopen("test.pdb", "w");
 	}
 
 	//----- Print data.
-	fprintf(fp,"ENDMDL\n");
+	if(time%100==0)
+		fprintf(fp,"ENDMDL\n");
 
 	time++;
   }
