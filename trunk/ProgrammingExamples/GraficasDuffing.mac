@@ -1,0 +1,38 @@
+/*Ejemplo 2 graficas en 1 sola*/
+
+/*Solucion con la aproximacion Teorica*/
+/*Para la ecuacion de Duffing*/
+phi(t):=-3*(a^2)/(8*w0)*t*epsilon+phi0$
+u1(t):=-(a^3)/(32*(w0^2))*cos(3*(w0*t+phi(t)))$
+x(t):=a*cos(w0*t+phi(t))+epsilon*u1(t)$
+
+/*Valor de las constantes*/
+w0:1$
+epsilon:0.01$
+
+/*Condicones Iniciales*/
+a:1$
+phi0:3*%pi/2$
+
+t0:0$
+t1:10$
+
+/*Solucion de Duffing usando metodos numericos - Runge*/
+load(diffeq)$
+Duffing(t,x,v):=-(w0^2)*x+epsilon*x^3$
+/*Valor de las constantes*/
+
+h:0.1$
+x0:0$
+v0:1$
+resDuffing:runge2(Duffing,t0,t1,h,x0,v0)$
+
+plot2d([[discrete,resDuffing[1],resDuffing[2]],x(t)],[t,t0,t1])$
+
+
+/*
+plot2d([[discrete,xy], 2*%pi*sqrt(l/980)], [l,0,50],
+        [style, [points,5,2,6], [lines,1,1]],
+        [legend,"experiment","theory"],
+        [xlabel,"pendulum's length (cm)"], [ylabel,"period (s)"])$
+*/
