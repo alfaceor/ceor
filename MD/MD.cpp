@@ -73,11 +73,12 @@ int main(int argc, char* argv[]) {
 	const int M=13;
 
 	Conformation protein(M,filename);
-	printf("--------------");
+	printf("--------------\n");
+	protein.print_r();
 	protein.calculateDeltaR2();
 	for (int i=0;i<M;i++){
 		for (int j=0; j<M; j++){
-			printf("%lf",protein.deltaR2[i*DIM+j]);
+			printf("%lf\t",protein.deltaR2[i*M+j]);
 		}
 		printf("\n");
 	}
