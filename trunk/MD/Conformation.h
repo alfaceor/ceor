@@ -26,6 +26,11 @@ public:
 	double D;			// End to End
 	double *deltaR2;
 	void calculateDeltaR2();
+	void calculateBondForces(double epsi, double q);
+	void calculateHydroForces(double epsi, double Ec);
+	void calculateTotalForces(double epsi, double q, double Ec);
+	void integratorVerlet(double dt);
+	void cleanForces();
 
 	void nextStep();	// time evolution, TODO: CLEAN force value
 	void print_r();		// Print data

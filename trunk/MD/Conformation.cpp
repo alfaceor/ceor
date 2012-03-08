@@ -7,18 +7,6 @@
 
 #include "Conformation.h"
 
-//Conformation::Conformation(int N) {
-//	int d=3;
-//	this->N = N;
-//	for(int i=0;i<this->N;i++){
-//		for(int j=0;j<d;j++){
-//			if(j==0) chain[i].vec_r[j] = i*chain[i].zigma;
-//			else	 chain[i].vec_r[j] = 0;
-//		}
-//	}
-//	// TODO: initialize force matrix
-//}
-
 Conformation::Conformation(int N, char *basename)
 {
 	// Initialize chain
@@ -33,8 +21,6 @@ Conformation::Conformation(int N, char *basename)
 		printf("filename= %s doesnt exist!\n",basename);
 		printf("creating new file %s with random data...\n",basename);
 		fp=fopen(basename,"w");
-		// File header
-//		fprintf(fip,"x\ty\tz\tvx\tvy\tvz\thydro\n");
 
 		//---------- random variables
 		gsl_rng *r1,*r2;
@@ -63,6 +49,8 @@ Conformation::Conformation(int N, char *basename)
 			if(i==0 || i==4 || i==8 || i==12) this->chain[i].hydro = -1.0;
 			else			this->chain[i].hydro =  1.0;
 			this->chain[i].vec_r[0] += this->chain[i].zigma*i;
+
+			// save data in a file.
 			fprintf(fp,"%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t\n",
 					this->chain[i].vec_r[0], this->chain[i].vec_r[1], this->chain[i].vec_r[2],
 					this->chain[i].vec_v[0], this->chain[i].vec_v[1], this->chain[i].vec_v[2],
@@ -103,6 +91,57 @@ void Conformation::calculateDeltaR2(){
 	}
 }
 
+void Conformation::calculateBondForces(double epsi, double q){
+	double auxvar;
+	double auxforce[DIM];
+	for (int m=0;m<N-1;m++){
+		auxvar = force_cc_r(epsi,q,deltaR2[m*N+(m+1)]);
+		for (int d=0;d<DIM;d++){
+			auxforce[d] = auxvar*(chain[m].vec_r[d] - chain[m+1].vec_r[d]);
+			chain[m].total_force[d]		+=  auxforce[d];
+			chain[m+1].total_force[d]	+= -auxforce[d];
+		}
+	}
+}
+
+void Conformation::calculateHydroForces(double epsi,double Ec){
+	double auxvar;
+	double auxforce[DIM];
+	for (int m=0;m<N-1;m++){
+//		FIXME: las fuerzas hidrophobicas o hidrofilicas
+		for (int i=m+2;i<N;i++){
+			auxvar = force_hydro(epsi,Ec,deltaR2[m*N+i],chain[m].hydro+chain[i].hydro);
+			for (int d=0;d<3;d++){
+				auxforce[d] = auxvar*(chain[m].vec_r[d]-chain[i].vec_r[d]);
+				chain[m].total_force[d] +=  auxforce[d];
+				chain[i].total_force[d] += -auxforce[d];
+			}
+		}
+	}
+}
+
+void Conformation::calculateTotalForces(double epsi, double q, double Ec){
+	cleanForces();
+	calculateDeltaR2();
+	calculateBondForces(epsi,q);
+	calculateHydroForces(epsi,Ec);
+}
+
+void Conformation::integratorVerlet(double dt){
+	for (int i=0;i<N;i++){
+		chain[i].actualizeVec_v(dt);
+	}
+}
+
+void Conformation::cleanForces(){
+	for(int i=0; i<N; i++){
+		for (int d=0; d<DIM; d++){
+			chain[i].total_force[d]=0.0;
+		}
+	}
+
+}
+
 //double Conformation::GaussianForce(double mean, double var){
 //
 //		const gsl_rng_type * T;
@@ -128,21 +167,6 @@ void Conformation::print_r(){
 	}
 }
 
-//void Conformation::print_pdbfile(char *filename)
-//{
-//	FILE *fp;
-//	int rating = 9;
-//	if (fp = fopen(filename, "w"))
-//	{
-//		fprintf(fp, "WWW\n");
-//		fprintf(fp, "Topic: computer programming\n");
-//		fprintf(fp, "Rating out of 10 : %d \n",rating );
-//		fclose(fp);
-//	}
-//	else
-//	printf("Error opening d:/website.txt\n");
-//
-//}
 
 void Conformation::print_pdb_line(int serial){
 	char recordname[]="HETATM";	// 1 - 6        Record name    "HETATM"

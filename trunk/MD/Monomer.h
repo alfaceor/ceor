@@ -8,8 +8,8 @@
 #ifndef MONOMER_H_
 #define MONOMER_H_
 
-#include "stdio.h"
-#define DIM 3
+#include "util_functions.h"
+
 class Monomer {
 public:
 	Monomer();
@@ -20,6 +20,9 @@ public:
 	double hydro;	// Hydropathy Index (negative polar && positive nonpolar)
 	double mass;
 	double total_force[DIM];
+	double total_force_old[DIM];
+	void actualizeVec_r(double dt);
+	void actualizeVec_v(double dt);
 	void print_r();
 	void print_v();
 };
