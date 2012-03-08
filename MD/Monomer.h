@@ -9,16 +9,17 @@
 #define MONOMER_H_
 
 #include "stdio.h"
-
+#define DIM 3
 class Monomer {
 public:
 	Monomer();
 	virtual ~Monomer();
-	double vec_r[3];	// position vector
-	double vec_v[3];	// velocity vector
+	double vec_r[DIM];	// position vector
+	double vec_v[DIM];	// velocity vector
 	double zigma;		// monomer diameter
-	double hydroIndex;	// Hydropathy Index (negative polar && positive nonpolar)
+	double hydro;	// Hydropathy Index (negative polar && positive nonpolar)
 	double mass;
+	double total_force[DIM];
 	void print_r();
 	void print_v();
 };
