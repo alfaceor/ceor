@@ -10,7 +10,10 @@
 Monomer::Monomer() {
 	zigma=1;
 	mass=1;
-	hydroIndex=1;
+	hydro=1;
+	total_force[0]=0.0;
+	total_force[1]=0.0;
+	total_force[2]=0.0;
 	vec_r[0]=0; vec_r[1]=0; vec_r[2]=0;
 	vec_v[0]=0.1; vec_v[1]=0; vec_v[2]=0;
 }

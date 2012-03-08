@@ -7,122 +7,124 @@
 
 #include "Conformation.h"
 
-Conformation::Conformation() {
-	int d=3;
-	for(int i=0;i<N;i++){
-		for(int j=0;j<d;j++){
-			if(j==0) chain[i].vec_r[j] = i*chain[i].zigma;
-			else	 chain[i].vec_r[j] = 0;
+//Conformation::Conformation(int N) {
+//	int d=3;
+//	this->N = N;
+//	for(int i=0;i<this->N;i++){
+//		for(int j=0;j<d;j++){
+//			if(j==0) chain[i].vec_r[j] = i*chain[i].zigma;
+//			else	 chain[i].vec_r[j] = 0;
+//		}
+//	}
+//	// TODO: initialize force matrix
+//}
+
+Conformation::Conformation(int N, char *basename)
+{
+	// Initialize chain
+	this->N = N;
+	this->chain = new Monomer[N]();
+	this->deltaR2 = new double[N*N]();
+	this->basename = basename;
+
+	FILE *fp;
+	fp=fopen(basename,"r");
+	if(fp==NULL){
+		printf("filename= %s doesnt exist!\n",basename);
+		printf("creating new file %s with random data...\n",basename);
+		fp=fopen(basename,"w");
+		// File header
+//		fprintf(fip,"x\ty\tz\tvx\tvy\tvz\thydro\n");
+
+		//---------- random variables
+		gsl_rng *r1,*r2;
+		const gsl_rng_type * T;
+		T = gsl_rng_default;
+		r1 = gsl_rng_alloc(T);
+		r2 = gsl_rng_alloc(T);
+		double randomaux;
+		for (int i=0;i<N;i++){
+			for (int d=0;d<DIM;d++){
+				// vector force
+				this->chain[i].total_force[d]=0.0;
+				// vector positions and velocities
+				this->chain[i].vec_r[d] = 0.0;
+				this->chain[i].vec_v[d] = 0.0;
+				if (d==0){
+					randomaux = 0.001*gsl_rng_uniform_pos(r1);
+					this->chain[i].vec_r[d] = randomaux;
+				}
+				// vector velocities in any direction.
+				randomaux = 0.5*(2*gsl_ran_gaussian(r2,this->chain[i].zigma) - 1);
+				this->chain[i].vec_v[d] = randomaux;
+			}
+			//-------------------------
+			// la misma cadena que usa Lois 2008
+			if(i==0 || i==4 || i==8 || i==12) this->chain[i].hydro = -1.0;
+			else			this->chain[i].hydro =  1.0;
+			this->chain[i].vec_r[0] += this->chain[i].zigma*i;
+			fprintf(fp,"%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t\n",
+					this->chain[i].vec_r[0], this->chain[i].vec_r[1], this->chain[i].vec_r[2],
+					this->chain[i].vec_v[0], this->chain[i].vec_v[1], this->chain[i].vec_v[2],
+					this->chain[i].hydro);
+		}
+
+	}else{
+		// read a file input data
+		for (int i=0; i<N; i++){
+			for (int d=0; d<DIM; d++){
+				fscanf(fp,"%lf",&this->chain[i].vec_r[d]);
+			}
+			for (int d=0; d<DIM; d++){
+				fscanf(fp,"%lf",&this->chain[i].vec_v[d]);
+			}
+			fscanf(fp,"%lf",&this->chain[i].hydro);
 		}
 	}
-	// TODO: initialize force matrix
+
+	fclose(fp);
 }
 
 Conformation::~Conformation() {
 	// TODO Auto-generated destructor stub
 }
 
-void Conformation::GenDeltas(){
-	// Generate a top diagonal matrix x_ij
-	for (int i=0;i<N-1;i++){
-		for (int j=i+1; j<N;j++){
-			deltaX[i][j]	= 	chain[i].vec_r[0] - chain[j].vec_r[0];
-			deltaY[i][j]	= 	chain[i].vec_r[1] - chain[j].vec_r[1];
-			deltaZ[i][j]	= 	chain[i].vec_r[2] - chain[j].vec_r[2];
-			// element by element matrix product.
-			deltaR2[i][j]	=	deltaX[i][j]*deltaX[i][j]+
-								deltaY[i][j]*deltaY[i][j]+
-								deltaZ[i][j]*deltaZ[i][j];
-			deltaR[i][j]	=	sqrt(deltaR2[i][j]);
+void Conformation::calculateDeltaR2(){
+	double auxdelta;
+	for (int k=0; k<N; k++){
+		for (int l=0; l<N; l++){
+			deltaR2[k*N+l] = 0.0;
+			for (int d=0;d<DIM;d++){
+				auxdelta = (chain[k].vec_r[d] - chain[l].vec_r[d]);
+				deltaR2[k*N+l] += auxdelta*auxdelta;
+			}
+			deltaR2[l*N+k] = deltaR2[k*N+l];
 		}
 	}
-
 }
 
-double Conformation::GaussianForce(double mean, double var){
-
-		const gsl_rng_type * T;
-		gsl_rng * r;
-		gsl_rng_env_setup();
-		T = gsl_rng_default;
-		r = gsl_rng_alloc(T);
-		// FIXME: complete this function to generate random forces.
-		double randomNumber;
-		for (int i=0;i<10;i++){
-			//randomNumber = (rand() % 10) / 10.0;
-
-			randomNumber = gsl_ran_gaussian(r,1);
-			printf("%f\n",randomNumber);
-		}
-		return randomNumber;
-
-}
-// TODO: Calculate the force over the particle k.
-// So the force with the interaction beteween k-1 and k plus k and k+1
-void Conformation::Force_cc(double epsilon, double q){
-
-	for (int k=1;k<N-1;k++){
-		if(deltaR[k-1][k]<=1){
-		// XXX: k-1 and k
-			double deltaR6 = pow(deltaR2[k-1][k],3);
-			double deltaR8 = deltaR6*deltaR2[k-1][k];
-			// Acumulate axis force projection.
-			for (int x=0;x<3;x++)	// FIXME: IS NOT
-				force[k][x] += -12*epsilon*(1/deltaR6 - 1)*deltaX[k-1][k]/deltaR8;
-		}else{
-			// TODO: Logarithmic force
-
-		}
-
-		// XXX: k and k+1
-		if(deltaR[k-1][k]<=1){
-		// k-1 and k
-			double deltaR6 = pow(deltaR2[k-1][k],3);
-			double deltaR8 = deltaR6*deltaR2[k-1][k];
-			// Acumulate axis force projection.
-			for (int x=0;x<3;x++)	// FIXME: IS NOT
-				force[k][x] += -12*epsilon*(1/deltaR6 - 1)*deltaX[k-1][k]/deltaR8;
-		}else{
-			// TODO: Logarithmic force
-
-		}
-
-
-		// epsilon*(1/pow(deltaR2[k][k+1],3) - 1)*deltaX[k][k+1]/pow(deltaR2[k][k+1],4);
-	}
-
-}
-
-
-double Conformation::Force_cc2(int i,int j, double r_ij, double epsilon){
-	double force;
-	double r_inv6,r_inv8;
-	// calculate r_ij e seus exponenetes
-	r_inv6=1.0/pow(r_ij,6);
-	r_inv8=r_inv6/pow(r_ij,2);
-	double x_i=0.3, x_j=0.5;
-
-	if(r_ij<=1){
-		printf("r_ij <= 1");
-		force = 12.0*epsilon*(r_inv6-1)*r_inv8*(x_i - x_j);
-		return force;
-	}else{
-		printf("r_ij > 1");
-		force = 0;
-		return force;
-	}
-}
-
-void Conformation::nextStep(){
-	// TODO make the evolution of the systems
-	// calculate the force
-	// update the positions and velocities
-	//
-}
+//double Conformation::GaussianForce(double mean, double var){
+//
+//		const gsl_rng_type * T;
+//		gsl_rng * r;
+//		gsl_rng_env_setup();
+//		T = gsl_rng_default;
+//		r = gsl_rng_alloc(T);
+//		// FIXME: complete this function to generate random forces.
+//		double randomNumber;
+//		for (int i=0;i<10;i++){
+//			//randomNumber = (rand() % 10) / 10.0;
+//
+//			randomNumber = gsl_ran_gaussian(r,1);
+//			printf("%f\n",randomNumber);
+//		}
+//		return randomNumber;
+//
+//}
 
 void Conformation::print_r(){
 	for(int i=0;i<N;i++){
-		chain[i].print_r(); printf("\n");
+		this->chain[i].print_r(); printf("\n");
 	}
 }
 
