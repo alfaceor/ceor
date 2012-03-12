@@ -30,12 +30,19 @@ public:
 	void calculateHydroForces(double epsi, double Ec);
 	void calculateTotalForces(double epsi, double q, double Ec);
 	void integratorVerlet(double dt);
+	void actualizePositions(double dt);
+	void actualizeVelocities(double dt);
+	void calculateKineticEnergy();
 	void cleanForces();
+	void randomPositions();
+	void gaussianRandomVelocities();
 
 	void nextStep();	// time evolution, TODO: CLEAN force value
 	void print_r();		// Print data
+	void print_pdb_conformation(FILE *fp, int time_model);
 //	void print_pdbfile(char *filename);
-	void print_pdb_line(int serial);
+	void print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *resName,double tempFactor);
+
 private:
 	int N;
 	char *basename;
