@@ -22,9 +22,10 @@ int main(int argc, char* argv[]) {
 	const int M	=	13;
 	double epsi	=	 1.0;
 	double q	=	 0.1;
-	double Ec	=	-0.8;
+	double Ec	=	-1.0;
+	double temp	=	0.04;
 	double dt	=	0.001;
-	int total_time = 100000;
+	int total_time = 2000000;
 
 	// Simulation
 	Conformation protein(M,filename);
@@ -38,12 +39,12 @@ int main(int argc, char* argv[]) {
 		protein.calculateTotalForces(epsi,q,Ec);
 		protein.actualizeVelocities(dt);
 		protein.calculateKineticEnergy();
-		if (time % 1000 == 0)
+		if (time % 10000 == 0)
 			protein.print_pdb_conformation(fp,time);
 		time++;
 	}
 
-
+	printf("END SIMULATION\n");
 
 	return EXIT_SUCCESS;
 }
