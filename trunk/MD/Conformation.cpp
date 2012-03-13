@@ -18,42 +18,21 @@ Conformation::Conformation(int N, char *basename)
 
 	FILE *fp;
 	fp=fopen(basename,"r");
-	if(fp==NULL){
+	//FIXME: temporal flag remove later
+//	if(fp==NULL){
+	if(true){
 		printf("filename= %s doesnt exist!\n",basename);
 		printf("creating new file %s with random data...\n",basename);
 		fp=fopen(basename,"w");
-
-		randomPositions();
-		printf("----\n");
-		gaussianRandomVelocities();
 		//---------- random variables
-//		gsl_rng *r1,*r2;
-//		const gsl_rng_type * T;
-//		T = gsl_rng_default;
-//		r1 = gsl_rng_alloc(T);
-//		r2 = gsl_rng_alloc(T);
-//		double randomaux;
+		randomPositions();
+		gaussianRandomVelocities();
+
 		for (int i=0;i<N;i++){
-//			FIXME: MAKE SOME FUNCTIONS FOR THIS RANDOM VALUES
-//			for (int d=0;d<DIM;d++){
-//				// vector force
-//				this->chain[i].total_force[d]=0.0;
-//				// vector positions and velocities
-//				this->chain[i].vec_r[d] = 0.0;
-//				this->chain[i].vec_v[d] = 0.0;
-//				if (d==0){
-//					randomaux = 0.001*gsl_rng_uniform_pos(r1);
-//					this->chain[i].vec_r[d] = randomaux;
-//				}
-//				// vector velocities in any direction.
-//				randomaux = 0.5*(2*gsl_ran_gaussian(r2,this->chain[i].zigma) - 1);
-//				this->chain[i].vec_v[d] = randomaux;
-//			}
 			//-------------------------
 			// la misma cadena que usa Lois 2008
 			if(i==0 || i==4 || i==8 || i==12) this->chain[i].hydro = -1.0;
 			else			this->chain[i].hydro =  1.0;
-//			this->chain[i].vec_r[0] += this->chain[i].zigma*i;
 
 			// save data in a file.
 			fprintf(fp,"%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t\n",
@@ -129,7 +108,7 @@ void Conformation::calculateTotalForces(double epsi, double q, double Ec){
 	cleanForces();
 	calculateDeltaR2();
 	calculateBondForces(epsi,q);
-	calculateHydroForces(epsi,Ec);
+//	calculateHydroForces(epsi,Ec);
 }
 
 
@@ -188,7 +167,7 @@ void Conformation::gaussianRandomVelocities(){
 	r1 = gsl_rng_alloc(T);
 	double randomaux;
 	double randomang;
-	double temp = 0.1;
+	double temp = 0.04;
 	double avg_vel[DIM];
 
 	for (int i=0;i<N;i++){
