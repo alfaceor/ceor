@@ -63,10 +63,8 @@ double force_cc_r(double epsilon, double q, double r2){
 double force_att_r(double epsilon, double Ec, double r2){
 	double r6 = 1.0/(r2*r2*r2);
 	double r8 = r6*(1.0/(r2));
-	if(r2<1)
-		return (-12*epsilon*Ec*r8*(r6-1));
-	else
-		return 0;
+
+	return (-12*epsilon*Ec*r8*(r6-1));
 }
 
 double force_rep_r(double epsilon, double r2){
@@ -87,8 +85,7 @@ double force_hydro(double epsilon, double Ec, double r2, int hydroValue){
 		return(force_att_r(epsilon,Ec,r2));
 	}else{
 		// fuerza repulsiva
-//		return(force_rep_r(epsilon,r2));
-		return(0);
+		return(force_rep_r(epsilon,r2));
 	}
 
 }
