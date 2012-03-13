@@ -91,7 +91,7 @@ void Conformation::calculateBondForces(double epsi, double q){
 void Conformation::calculateHydroForces(double epsi,double Ec){
 	double auxvar;
 	double auxforce[DIM];
-	for (int m=0;m<N-1;m++){
+	for (int m=0;m<N-2;m++){
 //		FIXME: las fuerzas hidrophobicas o hidrofilicas
 		for (int i=m+2;i<N;i++){
 			auxvar = force_hydro(epsi,Ec,deltaR2[m*N+i],chain[m].hydro+chain[i].hydro);
@@ -108,7 +108,7 @@ void Conformation::calculateTotalForces(double epsi, double q, double Ec){
 	cleanForces();
 	calculateDeltaR2();
 	calculateBondForces(epsi,q);
-//	calculateHydroForces(epsi,Ec);
+	calculateHydroForces(epsi,Ec);
 }
 
 
