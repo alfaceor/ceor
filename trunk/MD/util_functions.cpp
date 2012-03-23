@@ -34,6 +34,16 @@ double phi_rep(double epsilon,double r2){
 	}
 }
 
+double potential_hydro(double epsilon,double E_c, double r2, int hydroValue){
+	if(hydroValue==-2){
+			// fuerza atractiva
+			return(phi_att(epsilon,E_c,r2));
+		}else{
+			// fuerza repulsiva
+			return(phi_rep(epsilon,r2));
+		}
+}
+
 // Calculate quadratic norm
 double norm2(double *vector1, double *vector2, int d){
 	double norm2=0;
@@ -87,7 +97,6 @@ double force_hydro(double epsilon, double Ec, double r2, int hydroValue){
 		// fuerza repulsiva
 		return(force_rep_r(epsilon,r2));
 	}
-
 }
 
 

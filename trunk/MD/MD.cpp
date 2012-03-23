@@ -16,8 +16,6 @@
 
 int main(int argc, char* argv[]) {
 	// input parameters
-	char *filename;	filename="data_inicial.dat";
-	char *pdbfile;	pdbfile	="protein.pdb";
 
 	const int M	=	13;
 	double epsi	=	 1.0;
@@ -25,7 +23,10 @@ int main(int argc, char* argv[]) {
 	double Ec	=	-1.0;
 	double temp	=	0.04;
 	double dt	=	0.001;
-	int total_time = 2000000;
+	int total_time = 200000;
+
+	char *filename;	filename="data_inicial.dat";
+	char *pdbfile;	pdbfile	="protein.pdb";
 
 	// Simulation
 	Conformation protein(M,filename);
@@ -38,13 +39,17 @@ int main(int argc, char* argv[]) {
 		protein.actualizePositions(dt);
 		protein.calculateTotalForces(epsi,q,Ec);
 		protein.actualizeVelocities(dt);
-		protein.calculateKineticEnergy();
-		if (time % 10000 == 0)
+		protein.calculateTotalEnergy(epsi,q,Ec);
+
+		if (time % 10000 == 0){
 			protein.print_pdb_conformation(fp,time);
+			printf("%d\t%f\t%f\t%f\n",time,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy);
+		}
 		time++;
 	}
+	fclose(fp);
 
 	printf("END SIMULATION\n");
 
-	return EXIT_SUCCESS;
+	return 1;
 }
