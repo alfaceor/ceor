@@ -21,7 +21,9 @@ void print_array(double *array,const int N){
 
 int main(int argc, char* argv[]) {
 	FILE *fp;
-	fp = fopen("data.dat","r");
+	char *filename;
+	filename = "data.dat";
+	fp = fopen(filename,"r");
 
 	double number;
 	double arraynum[6];
