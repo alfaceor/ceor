@@ -15,6 +15,8 @@ Conformation::Conformation(int N, char *basename)
 	this->deltaR2	= new double[N*N]();
 	this->basename	= basename;
 	this->Energy	= 0.0;
+	this->KinecticEnergy =0.0;
+	this->PotentialEnergy=0.0;
 
 	FILE *fp;
 	fp=fopen(basename,"r");
@@ -88,6 +90,14 @@ void Conformation::calculateBondForces(double epsi, double q){
 	}
 }
 
+void Conformation::calculateBondPotential(double epsi,double q){
+	double auxvar=0.0;
+	for (int i=0;i<N-1;i++){
+		auxvar	+=	phi_cc(epsi,q,deltaR2[i*N+(i+1)]);
+	}
+	PotentialEnergy+=auxvar;
+}
+
 void Conformation::calculateHydroForces(double epsi,double Ec){
 	double auxvar;
 	double auxforce[DIM];
@@ -104,11 +114,29 @@ void Conformation::calculateHydroForces(double epsi,double Ec){
 	}
 }
 
+void Conformation::calculateHydroPotential(double epsi,double Ec){
+	double auxvar=0.0;
+	for(int m=0; m<N-2; m++){
+		for (int i=m+2;i<N;i++){
+			auxvar += potential_hydro(epsi,Ec,deltaR2[m*N+i],chain[m].hydro+chain[i].hydro);
+		}
+	}
+	PotentialEnergy+=auxvar;
+}
+
 void Conformation::calculateTotalForces(double epsi, double q, double Ec){
 	cleanForces();
 	calculateDeltaR2();
 	calculateBondForces(epsi,q);
 	calculateHydroForces(epsi,Ec);
+}
+
+void Conformation::calculateTotalEnergy(double epsi,double q, double Ec){
+	cleanEnergyValues();
+	calculateBondPotential(epsi,q);
+	calculateHydroPotential(epsi,Ec);
+	calculateKineticEnergy();
+	Energy = KinecticEnergy + PotentialEnergy;
 }
 
 
@@ -126,7 +154,13 @@ void Conformation::actualizeVelocities(double dt){
 }
 
 void Conformation::calculateKineticEnergy(){
-
+	double kinectic_energy=0.0;
+	for (int i=0; i<N; i++){
+		for (int d=0; d<DIM; d++){
+			kinectic_energy+=chain[i].mass*(chain[i].vec_v[d]*chain[i].vec_v[d]);
+		}
+	}
+	KinecticEnergy=0.5*kinectic_energy;
 }
 
 void Conformation::cleanForces(){
@@ -135,6 +169,12 @@ void Conformation::cleanForces(){
 			chain[i].total_force[d]=0.0;
 		}
 	}
+}
+
+void Conformation::cleanEnergyValues(){
+	this->Energy = 0.0;
+	this->KinecticEnergy = 0.0;
+	this->PotentialEnergy= 0.0;
 }
 
 void Conformation::randomPositions(){

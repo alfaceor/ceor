@@ -21,19 +21,25 @@ public:
 	Conformation(int N, char *basename);
 	virtual ~Conformation();
 	Monomer *chain;	// Polymer chain
-	double Energy;		// System Energy
-	double Rg;			// Radius of Gyration
-	double D;			// End to End
+	double KinecticEnergy;	// Kinetic energy
+	double PotentialEnergy;	// Potentatial energy
+	double Energy;			// System Energy
+	double Rg;				// Radius of Gyration
+	double D;				// End to End
 	double *deltaR2;
 	void calculateDeltaR2();
 	void calculateBondForces(double epsi, double q);
+	void calculateBondPotential(double epsi, double q);
 	void calculateHydroForces(double epsi, double Ec);
+	void calculateHydroPotential(double epsi, double Ec);
 	void calculateTotalForces(double epsi, double q, double Ec);
-	void integratorVerlet(double dt);
+	void calculateTotalEnergy(double epsi, double q, double Ec);
+//	void integratorVerlet(double dt);
 	void actualizePositions(double dt);
 	void actualizeVelocities(double dt);
 	void calculateKineticEnergy();
 	void cleanForces();
+	void cleanEnergyValues();
 	void randomPositions();
 	void gaussianRandomVelocities();
 
