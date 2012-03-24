@@ -8,31 +8,54 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
 
 #include "Conformation.h"
 
+void input_validation(){
+
+}
+
 int main(int argc, char* argv[]) {
 	// input parameters
+	if(argc != 8){
+		printf("Usage: MD [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec]\n");
+		return 0;
+	}
 
-	const int M	=	13;
-	double epsi	=	 1.0;
-	double q	=	 0.1;
-	double Ec	=	-1.0;
-	double temp	=	0.04;
-	double dt	=	0.001;
-	int total_time = 200000;
+	const int M		=	strlen(argv[1]);//13;
+	double temp		=	atof(argv[2]);	//0.04;
+	int total_time	=	atoi(argv[3]);//200000;
+	double dt	=	atof(argv[4]);//0.001;
+	double epsi	=	atof(argv[5]);	//1.0;
+	double q	=	atof(argv[6]); //0.1;
+	double Ec	=	atof(argv[7]); //-1.0;
 
-	char *filename;	filename="data_inicial.dat";
-	char *pdbfile;	pdbfile	="protein.pdb";
+	char filename_pattern[90];
+	char filename_pdb[100];
+	char filename_dat[100];
+	char ext_pdb[]=".pdb";
+	char ext_dat[]=".dat";
 
-	// Simulation
-	Conformation protein(M,filename);
+	strcpy(filename_pattern,"md-N");
+	for (int i=1;i<argc;i++){
+		strcat(filename_pattern,"_");
+		strcat(filename_pattern,argv[i]);
+	}
+
+	strcat(filename_pdb,filename_pattern);
+	strcat(filename_dat,filename_pattern);
+	strcat(filename_pdb,ext_pdb);
+	strcat(filename_dat,ext_dat);
+
+	//----------------- Simulation
+	Conformation protein(M,filename_dat);
 	protein.calculateTotalForces(epsi,q,Ec);
 	FILE *fp;
-	fp = fopen(pdbfile,"w");
+	fp = fopen(filename_pdb,"w");
 
 	int time	= 0;
 	while(time<total_time){
@@ -41,7 +64,7 @@ int main(int argc, char* argv[]) {
 		protein.actualizeVelocities(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
 
-		if (time % 10000 == 0){
+		if (time % 1000 == 0){
 			protein.print_pdb_conformation(fp,time);
 			printf("%d\t%f\t%f\t%f\n",time,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy);
 		}
