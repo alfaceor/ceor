@@ -7,7 +7,7 @@
 
 #include "Conformation.h"
 
-Conformation::Conformation(int N, char *basename)
+Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 {
 	// Initialize chain
 	this->N = N;
@@ -28,13 +28,18 @@ Conformation::Conformation(int N, char *basename)
 		fp=fopen(basename,"w");
 		//---------- random variables
 		randomPositions();
-		gaussianRandomVelocities();
+		gaussianRandomVelocities(temp); // temp
 
 		for (int i=0;i<N;i++){
 			//-------------------------
 			// la misma cadena que usa Lois 2008
-			if(i==0 || i==4 || i==8 || i==12) this->chain[i].hydro = -1.0;
-			else			this->chain[i].hydro =  1.0;
+			if(hydroChain[i]=='1'){
+				this->chain[i].hydro = -1.0;
+			}else{
+				this->chain[i].hydro =  1.0;
+			}
+//			if(i==0 || i==4 || i==8 || i==12) this->chain[i].hydro = -1.0;
+//			else			this->chain[i].hydro =  1.0;
 
 			// save data in a file.
 			fprintf(fp,"%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t\n",
@@ -198,7 +203,7 @@ void Conformation::randomPositions(){
 
 }
 
-void Conformation::gaussianRandomVelocities(){
+void Conformation::gaussianRandomVelocities(double temp){
 	gsl_rng *r2;
 	gsl_rng *r1;
 	const gsl_rng_type * T;
@@ -207,11 +212,11 @@ void Conformation::gaussianRandomVelocities(){
 	r1 = gsl_rng_alloc(T);
 	double randomaux;
 	double randomang;
-	double temp = 0.04;
+//	double temp = 0.04;
 	double avg_vel[DIM];
 
 	for (int i=0;i<N;i++){
-		randomaux = gsl_ran_gaussian(r2,temp);
+		randomaux = gsl_ran_gaussian(r2,1);
 		randomang = M_PI*gsl_rng_uniform(r1);
 		for (int d=0;d<DIM;d++){
 			// vector positions and velocities
@@ -236,6 +241,15 @@ void Conformation::gaussianRandomVelocities(){
 		}
 	}
 
+	calculateKineticEnergy();
+
+	double scale_temp=sqrt(3.0*temp/KinecticEnergy);
+
+	for (int i=0;i<N;i++){
+		for (int d=0; d<DIM; d++){
+			chain[i].vec_v[d] = scale_temp*chain[i].vec_v[d];
+		}
+	}
 }
 
 

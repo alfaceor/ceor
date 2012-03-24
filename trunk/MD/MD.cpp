@@ -27,6 +27,8 @@ int main(int argc, char* argv[]) {
 	}
 
 	const int M		=	strlen(argv[1]);//13;
+	char *hydroChain;
+	hydroChain =	argv[1];
 	double temp		=	atof(argv[2]);	//0.04;
 	int total_time	=	atoi(argv[3]);//200000;
 	double dt	=	atof(argv[4]);//0.001;
@@ -52,7 +54,7 @@ int main(int argc, char* argv[]) {
 	strcat(filename_dat,ext_dat);
 
 	//----------------- Simulation
-	Conformation protein(M,filename_dat);
+	Conformation protein(M, hydroChain, temp, filename_dat);
 	protein.calculateTotalForces(epsi,q,Ec);
 	FILE *fp;
 	fp = fopen(filename_pdb,"w");
