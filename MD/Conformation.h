@@ -18,7 +18,7 @@ class Conformation {
 
 public:
 	Conformation(int N);
-	Conformation(int N, char *basename);
+	Conformation(int N, char *hydroChain, double temp, char *basename);
 	virtual ~Conformation();
 	Monomer *chain;	// Polymer chain
 	double KinecticEnergy;	// Kinetic energy
@@ -41,7 +41,7 @@ public:
 	void cleanForces();
 	void cleanEnergyValues();
 	void randomPositions();
-	void gaussianRandomVelocities();
+	void gaussianRandomVelocities(double temp);
 
 	void nextStep();	// time evolution, TODO: CLEAN force value
 	void print_r();		// Print data
