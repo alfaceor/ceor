@@ -66,6 +66,7 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 
 Conformation::~Conformation() {
 	// TODO Auto-generated destructor stub
+	delete deltaR2;
 }
 
 void Conformation::calculateDeltaR2(){
@@ -80,6 +81,32 @@ void Conformation::calculateDeltaR2(){
 			deltaR2[l*N+k] = deltaR2[k*N+l];
 		}
 	}
+}
+
+void Conformation::calculateCenterMass(){
+	CenterMass[0]=0.0;CenterMass[1]=0.0;CenterMass[2]=0.0;
+	for(int i=0; i<N; i++){
+		for(int d=0; d<DIM; d++){
+			CenterMass[d]+=chain[i].mass*chain[i].vec_r[d];
+		}
+	}
+
+	for(int d=0; d<DIM; d++){
+		CenterMass[d]=CenterMass[d]/N;
+	}
+}
+
+
+void Conformation::calculateRg(){
+	// Radius of Gyration: the rms distance of each atom to the centroid.
+	double rms = 0.0;
+	calculateCenterMass();
+	for (int i=0; i<N; i++){
+		for (int d=0; d<DIM; d++){
+			rms += (chain[i].vec_r[d] - CenterMass[d])*(chain[i].vec_r[d] - CenterMass[d]);
+		}
+	}
+	Rg =  sqrt(rms/N);
 }
 
 void Conformation::calculateBondForces(double epsi, double q){

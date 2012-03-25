@@ -24,10 +24,13 @@ public:
 	double KinecticEnergy;	// Kinetic energy
 	double PotentialEnergy;	// Potentatial energy
 	double Energy;			// System Energy
-	double Rg;				// Radius of Gyration
+	double Rg;				// Radius of Gyration: the rms distance of each atom to the centroid.
+	double CenterMass[DIM];
 	double D;				// End to End
 	double *deltaR2;
 	void calculateDeltaR2();
+	void calculateCenterMass();
+	void calculateRg();
 	void calculateBondForces(double epsi, double q);
 	void calculateBondPotential(double epsi, double q);
 	void calculateHydroForces(double epsi, double Ec);
