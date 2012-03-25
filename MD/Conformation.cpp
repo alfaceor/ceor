@@ -23,8 +23,8 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 	//FIXME: temporal flag remove later
 //	if(fp==NULL){
 	if(true){
-		printf("filename= %s doesnt exist!\n",basename);
-		printf("creating new file %s with random data...\n",basename);
+		printf("# filename= %s doesnt exist!\n",basename);
+		printf("# creating new file %s with random data...\n",basename);
 		fp=fopen(basename,"w");
 		//---------- random variables
 		randomPositions();

@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
 	protein.calculateTotalForces(epsi,q,Ec);
 	FILE *fp;
 	fp = fopen(filename_pdb,"w");
-	printf("%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg");
+	printf("#%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg");
 	int ttime	= 0;
 	while(ttime<total_time){
 		protein.actualizePositions(dt);
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 	}
 	fclose(fp);
 
-	printf("END SIMULATION\n");
+	printf("# END SIMULATION\n");
 
 	return 1;
 }
