@@ -58,19 +58,20 @@ int main(int argc, char* argv[]) {
 	protein.calculateTotalForces(epsi,q,Ec);
 	FILE *fp;
 	fp = fopen(filename_pdb,"w");
-
-	int time	= 0;
-	while(time<total_time){
+	printf("%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg");
+	int ttime	= 0;
+	while(ttime<total_time){
 		protein.actualizePositions(dt);
 		protein.calculateTotalForces(epsi,q,Ec);
 		protein.actualizeVelocities(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
 
-		if (time % 1000 == 0){
-			protein.print_pdb_conformation(fp,time);
-			printf("%d\t%f\t%f\t%f\n",time,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy);
+		if (ttime % 1000 == 0){
+			protein.print_pdb_conformation(fp,ttime);
+			protein.calculateRg();
+			printf("%d\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg);
 		}
-		time++;
+		ttime++;
 	}
 	fclose(fp);
 
