@@ -11,6 +11,7 @@ Monomer::Monomer() {
 	zigma=1;
 	mass=1;
 	hydro=1;
+	gamma=0.001;
 	for (int d=0; d<DIM; d++){
 		total_force[d]=0.0;
 		total_force_old[d]=0.0;

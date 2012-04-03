@@ -15,9 +15,6 @@
 
 #include "Conformation.h"
 
-void input_validation(){
-
-}
 
 int main(int argc, char* argv[]) {
 	// input parameters
@@ -58,7 +55,7 @@ int main(int argc, char* argv[]) {
 	protein.calculateTotalForces(epsi,q,Ec);
 	FILE *fp;
 	fp = fopen(filename_pdb,"w");
-	printf("#%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg");
+	printf("#%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D");
 	int ttime	= 0;
 	while(ttime<total_time){
 		protein.actualizePositions(dt);
@@ -69,7 +66,8 @@ int main(int argc, char* argv[]) {
 		if (ttime % 1000 == 0){
 			protein.print_pdb_conformation(fp,ttime);
 			protein.calculateRg();
-			printf("%d\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg);
+			protein.calculateD();
+			printf("%d\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D);
 		}
 		ttime++;
 	}

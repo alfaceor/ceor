@@ -19,6 +19,7 @@ public:
 	double zigma;		// monomer diameter
 	double hydro;	// Hydropathy Index (negative polar && positive nonpolar)
 	double mass;
+	double gamma;	// Viscosius constant
 	double total_force[DIM];
 	double total_force_old[DIM];
 	void actualizeVec_r(double dt);

@@ -31,10 +31,12 @@ public:
 	void calculateDeltaR2();
 	void calculateCenterMass();
 	void calculateRg();
+	void calculateD();
 	void calculateBondForces(double epsi, double q);
 	void calculateBondPotential(double epsi, double q);
 	void calculateHydroForces(double epsi, double Ec);
 	void calculateHydroPotential(double epsi, double Ec);
+	void calculateDampingForces();
 	void calculateTotalForces(double epsi, double q, double Ec);
 	void calculateTotalEnergy(double epsi, double q, double Ec);
 //	void integratorVerlet(double dt);
@@ -45,6 +47,7 @@ public:
 	void cleanEnergyValues();
 	void randomPositions();
 	void gaussianRandomVelocities(double temp);
+	void randomForce();
 
 	void nextStep();	// time evolution, TODO: CLEAN force value
 	void print_r();		// Print data
