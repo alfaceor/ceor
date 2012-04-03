@@ -109,6 +109,14 @@ void Conformation::calculateRg(){
 	Rg =  sqrt(rms/N);
 }
 
+void Conformation::calculateD(){
+	double aux = 0.0;
+	for (int d=0; d<DIM; d++){
+		aux += (chain[0].vec_r[d] - chain[N-1].vec_r[d])*(chain[0].vec_r[d] - chain[N-1].vec_r[d]);
+	}
+	D = sqrt(aux);
+}
+
 void Conformation::calculateBondForces(double epsi, double q){
 	double auxvar;
 	double auxforce[DIM];
@@ -146,6 +154,20 @@ void Conformation::calculateHydroForces(double epsi,double Ec){
 	}
 }
 
+void Conformation::calculateDampingForces(){
+	for (int i=0; i<N; i++){
+		for (int d=0; d<DIM; d++){
+			chain[i].total_force[d] += -chain[i].gamma*(chain[i].vec_v[d]);
+		}
+	}
+}
+
+void Conformation::randomForce(){
+	for (int i=0; i<N; i++){
+		//chain[i].total_force
+	}
+}
+
 void Conformation::calculateHydroPotential(double epsi,double Ec){
 	double auxvar=0.0;
 	for(int m=0; m<N-2; m++){
@@ -161,6 +183,7 @@ void Conformation::calculateTotalForces(double epsi, double q, double Ec){
 	calculateDeltaR2();
 	calculateBondForces(epsi,q);
 	calculateHydroForces(epsi,Ec);
+	calculateDampingForces();
 }
 
 void Conformation::calculateTotalEnergy(double epsi,double q, double Ec){
@@ -342,32 +365,6 @@ void Conformation::print_pdb_line(FILE *fp,int serial, double x, double y, doubl
 	fprintf(fp,"\n");
 }
 
-
-
-
-//void Conformation::print_pdb_line(int serial){
-//	char recordname[]="HETATM";	// 1 - 6        Record name    "HETATM"
-////  int  serial    =1;			// 7 - 11       Integer   Atom serial number.
-//	char name    []="    ";		//13 - 16       Atom      Atom name.
-//	char altLoc  []=" ";		//17            character Alternate location indicator.
-//	char resName []=" MG";		//18 - 20       Residue name  Residue name.
-//	char chainID []="A";		//22            character     Chain identifier.
-//	char resSeq  []="1";
-//	char iCode   []=" ";
-//	double x       = 11.3;	//chain[serial].vec_r[0];
-//	double y       = 10.1;	//chain[serial].vec_r[1];
-//	double z       = 0.0;	//chain[serial].vec_r[2];
-//	double occupancy =1.00;		// FIXME: WHY this value?
-//	double tempFactor =27.36;	// FIXME:
-//	char element []="  ";
-//	char charge  []="  ";
-//
-//  char pdb_line[80];
-//  const char atom_line_iformat[]=
-//    "%6s%5d %4s%1s%3s %1s%4s%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s";
-//  sprintf(pdb_line,atom_line_iformat, recordname, serial,name, altLoc, resName, chainID, resSeq, iCode,x, y, z, occupancy, tempFactor, element,charge);
-//  printf("%s\n",pdb_line);
-//}
 
 
 
