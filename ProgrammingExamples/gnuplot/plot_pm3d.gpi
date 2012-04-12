@@ -1,0 +1,4 @@
+set pm3d map
+set palette defined (0 "red", 1 "yellow", 2 "green", 3 "skyblue", 4 "blue")
+unset key
+splot "./data_pm3d.dat" us 1:2:3
