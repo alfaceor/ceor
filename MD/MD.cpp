@@ -18,8 +18,8 @@
 
 int main(int argc, char* argv[]) {
 	// input parameters
-	if(argc != 8){
-		printf("Usage: MD [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec]\n");
+	if(argc != 9){
+		printf("Usage: MD [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
 		return 0;
 	}
 
@@ -32,6 +32,7 @@ int main(int argc, char* argv[]) {
 	double epsi	=	atof(argv[5]);	//1.0;
 	double q	=	atof(argv[6]); //0.1;
 	double Ec	=	atof(argv[7]); //-1.0;
+	int print_each	=	atoi(argv[8]);
 
 	char filename_pattern[90];
 	char filename_pdb[100];
@@ -63,7 +64,7 @@ int main(int argc, char* argv[]) {
 		protein.actualizeVelocities(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
 
-		if (ttime % 1000 == 0){
+		if (ttime % print_each == 0){
 			protein.print_pdb_conformation(fp,ttime);
 			protein.calculateRg();
 			protein.calculateD();
@@ -75,5 +76,5 @@ int main(int argc, char* argv[]) {
 
 	printf("# END SIMULATION\n");
 
-	return 1;
+	return EXIT_SUCCESS;
 }
