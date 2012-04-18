@@ -194,7 +194,25 @@ void Conformation::calculateTotalEnergy(double epsi,double q, double Ec){
 	Energy = KinecticEnergy + PotentialEnergy;
 }
 
+void Conformation::setTemperature(double temp){
+	// FIXME: First calculateTemperature and then scaled
+	calculateTemperature();
 
+	double scale_temp=1/sqrt(Temperature/temp);
+
+	for (int i=0;i<N;i++){
+		for (int d=0; d<DIM; d++){
+			chain[i].vec_v[d] = scale_temp*chain[i].vec_v[d];
+		}
+	}
+}
+
+void Conformation::calculateTemperature(){
+	// FIXME:
+	calculateKineticEnergy();
+
+	Temperature = 2.0*KinecticEnergy/3.0;	// XXX: Boltzmann constant
+}
 
 void Conformation::actualizePositions(double dt){
 	for (int i=0;i<N;i++){
@@ -291,15 +309,8 @@ void Conformation::gaussianRandomVelocities(double temp){
 		}
 	}
 
-	calculateKineticEnergy();
-
-	double scale_temp=sqrt(3.0*temp/KinecticEnergy);
-
-	for (int i=0;i<N;i++){
-		for (int d=0; d<DIM; d++){
-			chain[i].vec_v[d] = scale_temp*chain[i].vec_v[d];
-		}
-	}
+	// Set temperature for the system
+	setTemperature(temp);
 }
 
 

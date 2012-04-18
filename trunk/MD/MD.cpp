@@ -18,30 +18,34 @@
 
 int main(int argc, char* argv[]) {
 	// input parameters
-	if(argc != 9){
-		printf("Usage: MD [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
+	if(argc != 10){
+		printf("Usage: MD [prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
+		printf("prefix: just 3 characterts please!!!\n");
 		return 0;
 	}
 
 	const int M		=	strlen(argv[1]);//13;
-	char *hydroChain;
-	hydroChain =	argv[1];
-	double temp		=	atof(argv[2]);	//0.04;
-	int total_time	=	atoi(argv[3]);//200000;
-	double dt	=	atof(argv[4]);//0.001;
-	double epsi	=	atof(argv[5]);	//1.0;
-	double q	=	atof(argv[6]); //0.1;
-	double Ec	=	atof(argv[7]); //-1.0;
-	int print_each	=	atoi(argv[8]);
+	char *prefix_file, *hydroChain;
+	prefix_file=	argv[1];
+	hydroChain =	argv[2];
+	double temp		=	atof(argv[3]);	//0.04;
+	int total_time	=	atoi(argv[4]);//200000;
+	double dt	=	atof(argv[5]);//0.001;
+	double epsi	=	atof(argv[6]);	//1.0;
+	double q	=	atof(argv[7]); //0.1;
+	double Ec	=	atof(argv[8]); //-1.0;
+	int print_each	=	atoi(argv[9]);
 
 	char filename_pattern[90];
 	char filename_pdb[100];
 	char filename_dat[100];
+	char filename_ini[100];
 	char ext_pdb[]=".pdb";
 	char ext_dat[]=".dat";
+	char ext_ini[]=".ini";
 
-	strcpy(filename_pattern,"md-N");
-	for (int i=1;i<argc;i++){
+	strcpy(filename_pattern,prefix_file);
+	for (int i=0;i<argc;i++){
 		strcat(filename_pattern,"_");
 		strcat(filename_pattern,argv[i]);
 	}
@@ -52,11 +56,12 @@ int main(int argc, char* argv[]) {
 	strcat(filename_dat,ext_dat);
 
 	//----------------- Simulation
-	Conformation protein(M, hydroChain, temp, filename_dat);
+	Conformation protein(M, hydroChain, temp, filename_ini);
 	protein.calculateTotalForces(epsi,q,Ec);
-	FILE *fp;
-	fp = fopen(filename_pdb,"w");
-	printf("#%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D");
+	FILE *fp_pdb, *fp_dat, *fp_ini;
+	fp_pdb = fopen(filename_pdb,"w");
+	fp_dat = fopen(filename_dat,"w");
+	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D");
 	int ttime	= 0;
 	while(ttime<total_time){
 		protein.actualizePositions(dt);
@@ -65,14 +70,15 @@ int main(int argc, char* argv[]) {
 		protein.calculateTotalEnergy(epsi,q,Ec);
 
 		if (ttime % print_each == 0){
-			protein.print_pdb_conformation(fp,ttime);
+			protein.print_pdb_conformation(fp_pdb,ttime);
 			protein.calculateRg();
 			protein.calculateD();
-			printf("%d\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D);
+			fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D);
 		}
 		ttime++;
 	}
-	fclose(fp);
+	fclose(fp_pdb);
+	fclose(fp_dat);
 
 	printf("# END SIMULATION\n");
 

@@ -28,6 +28,7 @@ public:
 	double CenterMass[DIM];
 	double D;				// End to End
 	double *deltaR2;
+	double Temperature;		// to get the temperature in Kelvin divide by Boltzmann constant
 	void calculateDeltaR2();
 	void calculateCenterMass();
 	void calculateRg();
@@ -40,6 +41,10 @@ public:
 	void calculateTotalForces(double epsi, double q, double Ec);
 	void calculateTotalEnergy(double epsi, double q, double Ec);
 //	void integratorVerlet(double dt);
+
+	void setTemperature(double temp);
+	void calculateTemperature();
+
 	void actualizePositions(double dt);
 	void actualizeVelocities(double dt);
 	void calculateKineticEnergy();
