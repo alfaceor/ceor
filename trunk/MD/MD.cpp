@@ -21,13 +21,13 @@ int main(int argc, char* argv[]) {
 	if(argc != 10){
 		printf("Usage: MD [prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
 		printf("prefix: just 3 characterts please!!!\n");
-		return 0;
+		return EXIT_FAILURE;
 	}
 
 	const int M		=	strlen(argv[1]);//13;
 	char *prefix_file, *hydroChain;
-	prefix_file=	argv[1];
-	hydroChain =	argv[2];
+	prefix_file	=	argv[1];
+	hydroChain	=	argv[2];
 	double temp		=	atof(argv[3]);	//0.04;
 	int total_time	=	atoi(argv[4]);//200000;
 	double dt	=	atof(argv[5]);//0.001;
@@ -42,7 +42,6 @@ int main(int argc, char* argv[]) {
 	char filename_ini[100];
 	char ext_pdb[]=".pdb";
 	char ext_dat[]=".dat";
-	char ext_ini[]=".ini";
 
 	strcpy(filename_pattern,prefix_file);
 	for (int i=0;i<argc;i++){
@@ -58,7 +57,7 @@ int main(int argc, char* argv[]) {
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
 	protein.calculateTotalForces(epsi,q,Ec);
-	FILE *fp_pdb, *fp_dat, *fp_ini;
+	FILE *fp_pdb, *fp_dat;
 	fp_pdb = fopen(filename_pdb,"w");
 	fp_dat = fopen(filename_dat,"w");
 	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D");
