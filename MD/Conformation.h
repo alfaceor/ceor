@@ -38,6 +38,7 @@ public:
 	void calculateHydroForces(double epsi, double Ec);
 	void calculateHydroPotential(double epsi, double Ec);
 	void calculateDampingForces();
+	void calculateRandomForces();
 	void calculateTotalForces(double epsi, double q, double Ec);
 	void calculateTotalEnergy(double epsi, double q, double Ec);
 //	void integratorVerlet(double dt);
