@@ -15,6 +15,7 @@ public:
 	Monomer();
 	virtual ~Monomer();
 	double vec_r[DIM];	// position vector
+	double vec_r_old[DIM];	// position vector
 	double vec_v[DIM];	// velocity vector
 	double zigma;		// monomer diameter
 	double hydro;	// Hydropathy Index (negative polar && positive nonpolar)
@@ -23,6 +24,7 @@ public:
 	double total_force[DIM];
 	double total_force_old[DIM];
 	void actualizeVec_r(double dt);
+	void addPositionNoise(double dt, double KT, gsl_rng *r);
 	void actualizeVec_v(double dt);
 	void print_r();
 	void print_v();

@@ -162,7 +162,7 @@ void Conformation::calculateDampingForces(){
 	}
 }
 
-void Conformation::randomForce(){
+void Conformation::calculateRandomForces(){
 	for (int i=0; i<N; i++){
 		//chain[i].total_force
 	}
@@ -183,7 +183,7 @@ void Conformation::calculateTotalForces(double epsi, double q, double Ec){
 	calculateDeltaR2();
 	calculateBondForces(epsi,q);
 	calculateHydroForces(epsi,Ec);
-	calculateDampingForces();
+	//calculateDampingForces();
 }
 
 void Conformation::calculateTotalEnergy(double epsi,double q, double Ec){
@@ -220,6 +220,14 @@ void Conformation::actualizePositions(double dt){
 	}
 }
 
+void Conformation::addPositionNoise(double dt, double KT, gsl_rng *r){
+
+	for (int i=0;i<N;i++){
+		chain[i].addPositionNoise(dt,KT,r);
+	}
+
+}
+
 void Conformation::actualizeVelocities(double dt){
 	for (int i=0;i<N;i++){
 		chain[i].actualizeVec_v(dt);
@@ -239,6 +247,7 @@ void Conformation::calculateKineticEnergy(){
 void Conformation::cleanForces(){
 	for(int i=0; i<N; i++){
 		for (int d=0; d<DIM; d++){
+			chain[i].total_force_old[d] = chain[i].total_force[d];
 			chain[i].total_force[d]=0.0;
 		}
 	}
