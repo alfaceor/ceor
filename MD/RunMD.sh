@@ -1,5 +1,6 @@
 #!/bin/bash
 # rev_prefix=`svn info |grep Revision |awk 'print $2'`
+svn update
 rev_prefix=`svnversion`
 exec=MD
 # Usage: MD [prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]
