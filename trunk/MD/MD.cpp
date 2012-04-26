@@ -57,7 +57,6 @@ int main(int argc, char* argv[]) {
 	strcat(filename_pdb,ext_pdb);
 	strcat(filename_dat,ext_dat);
 	strcat(filename_ini,ext_ini);
-	printf("**** %s ****\n",filename_pattern);
 
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
