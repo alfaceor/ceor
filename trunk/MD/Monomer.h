@@ -9,6 +9,9 @@
 #define MONOMER_H_
 
 #include "util_functions.h"
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_randist.h>
+#include <gsl/gsl_rng.h>
 
 class Monomer {
 public:

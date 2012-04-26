@@ -24,10 +24,11 @@ int main(int argc, char* argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	const int M		=	strlen(argv[1]);//13;
+
 	char *prefix_file, *hydroChain;
 	prefix_file	=	argv[1];
 	hydroChain	=	argv[2];
+	const int M		=	strlen(argv[2]);//13;
 	double temp		=	atof(argv[3]);	//0.04;
 	int total_time	=	atoi(argv[4]);//200000;
 	double dt	=	atof(argv[5]);//0.001;
@@ -42,17 +43,21 @@ int main(int argc, char* argv[]) {
 	char filename_ini[100];
 	char ext_pdb[]=".pdb";
 	char ext_dat[]=".dat";
+	char ext_ini[]=".ini";
 
 	strcpy(filename_pattern,prefix_file);
-	for (int i=0;i<argc;i++){
+	for (int i=2;i<argc;i++){
 		strcat(filename_pattern,"_");
 		strcat(filename_pattern,argv[i]);
 	}
 
-	strcat(filename_pdb,filename_pattern);
-	strcat(filename_dat,filename_pattern);
+	strcpy(filename_pdb,filename_pattern);
+	strcpy(filename_dat,filename_pattern);
+	strcpy(filename_ini,filename_pattern);
 	strcat(filename_pdb,ext_pdb);
 	strcat(filename_dat,ext_dat);
+	strcat(filename_ini,ext_ini);
+	printf("**** %s ****\n",filename_pattern);
 
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
