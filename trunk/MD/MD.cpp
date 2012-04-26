@@ -62,9 +62,14 @@ int main(int argc, char* argv[]) {
 	fp_dat = fopen(filename_dat,"w");
 	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D");
 	int ttime	= 0;
+
+	const gsl_rng_type *T; T = gsl_rng_default;
+	gsl_rng *r; r = gsl_rng_alloc(T);
+
 	while(ttime<total_time){
-		protein.actualizePositions(dt);
 		protein.calculateTotalForces(epsi,q,Ec);
+		protein.actualizePositions(dt);
+		protein.addPositionNoise(dt,temp,r);
 		protein.actualizeVelocities(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
 

@@ -47,14 +47,13 @@ public:
 	void calculateTemperature();
 
 	void actualizePositions(double dt);
+	void addPositionNoise(double dt, double KT, gsl_rng *r);
 	void actualizeVelocities(double dt);
 	void calculateKineticEnergy();
 	void cleanForces();
 	void cleanEnergyValues();
 	void randomPositions();
 	void gaussianRandomVelocities(double temp);
-	void randomForce();
-
 	void nextStep();	// time evolution, TODO: CLEAN force value
 	void print_r();		// Print data
 	void print_pdb_conformation(FILE *fp, int time_model);
