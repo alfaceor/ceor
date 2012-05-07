@@ -3,6 +3,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
+#include <time.h>
 
 void generate2randomNumbers(int N, double sigma){
 	gsl_rng *r1, *r2;
@@ -42,8 +43,8 @@ int main(int argc, char* argv[]) {
 	gsl_rng *r1;
 //	gsl_rng_env_setup();
 	unsigned long int seed;
-//	seed = time (NULL) * getpid();   // FIXME: SEED 
-	seed=10;
+	seed = time (NULL); // * getpid();   // FIXME: SEED 
+	//seed=10;
 	
 	T1	= gsl_rng_default;
 	r1	= gsl_rng_alloc(T1);
