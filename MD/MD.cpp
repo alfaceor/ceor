@@ -12,6 +12,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_rng.h>
+#include <time.h>
 
 #include "Conformation.h"
 
@@ -69,6 +70,9 @@ int main(int argc, char* argv[]) {
 
 	const gsl_rng_type *T; T = gsl_rng_default;
 	gsl_rng *r; r = gsl_rng_alloc(T);
+	long unsigned int seed;
+	seed = time(NULL); // Get the time of the system as seed
+	gsl_rng_set(r,seed);
 
 	while(ttime<total_time){
 		protein.calculateTotalForces(epsi,q,Ec);
