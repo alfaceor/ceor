@@ -47,7 +47,7 @@ public:
 	void calculateTemperature();
 
 	void actualizePositions(double dt);
-	void addPositionNoise(double dt, double KT, gsl_rng *r);
+	void addPosition2DNoise(double dt, double KT, gsl_rng *r);
 	void actualizeVelocities(double dt);
 	void calculateKineticEnergy();
 	void cleanForces();

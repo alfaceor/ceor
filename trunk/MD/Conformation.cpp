@@ -220,10 +220,10 @@ void Conformation::actualizePositions(double dt){
 	}
 }
 
-void Conformation::addPositionNoise(double dt, double KT, gsl_rng *r){
+void Conformation::addPosition2DNoise(double dt, double KT, gsl_rng *r){
 
 	for (int i=0;i<N;i++){
-		chain[i].addPositionNoise(dt,KT,r);
+		chain[i].addPosition2DNoise(dt,KT,r);
 	}
 
 }

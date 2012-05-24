@@ -39,13 +39,15 @@ void Monomer::actualizeVec_r(double dt){
 	}
 }
 
-void Monomer::addPositionNoise(double dt, double KT, gsl_rng *r){
+void Monomer::addPosition2DNoise(double dt, double KT, gsl_rng *r){
+	// Position noise for 2D dimensions.
 	double etha;
-	for (int d=0; d<DIM; d++){
+	for (int d=0; d<(DIM-1); d++){
 		// Generate the gaussian random number
 		etha=gsl_ran_gaussian(r,1);
 		vec_r[d] += sqrt(2*KT*dt)*etha;
 	}
+	vec_r[2] = 0;
 
 }
 
