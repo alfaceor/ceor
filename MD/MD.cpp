@@ -20,11 +20,9 @@
 int main(int argc, char* argv[]) {
 	// input parameters
 	if(argc != 10){
-		printf("Usage: MD [prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
-		printf("prefix: just 3 characterts please!!!\n");
+		printf("Usage: MD [rev_prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
 		return EXIT_FAILURE;
 	}
-
 
 	char *prefix_file, *hydroChain;
 	prefix_file	=	argv[1];
@@ -77,7 +75,7 @@ int main(int argc, char* argv[]) {
 	while(ttime<total_time){
 		protein.calculateTotalForces(epsi,q,Ec);
 		protein.actualizePositions(dt);
-		protein.addPositionNoise(dt,temp,r);
+		protein.addPosition2DNoise(dt,temp,r);
 		protein.actualizeVelocities(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
 
