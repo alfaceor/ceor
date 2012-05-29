@@ -28,7 +28,7 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 		fp=fopen(basename,"w");
 		//---------- random variables
 		randomPositions();
-		gaussianRandomVelocities(temp); // temp
+		//gaussianRandomVelocities(temp); // temp
 
 		for (int i=0;i<N;i++){
 			//-------------------------
