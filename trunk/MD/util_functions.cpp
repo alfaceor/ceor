@@ -59,13 +59,19 @@ double force_cc_r(double epsilon, double q, double r2){
 	double force;
 	double r6 = 1.0/(r2*r2*r2);
 	double r8 = r6*(1.0/(r2));
-	if(r2<=1){
+
+	if(r2 <=1){
 		force = ( 12*epsilon*r8*(r6-1) );
 	}else{
 		double r   = sqrt(r2);
-		double aux = (r-1)/q;
-		double denominador = r*q*(1.0/aux - aux);
-		force =  -2*epsilon/denominador;
+		if(r < 1+q){
+			double aux = (r-1)/q;
+			double denominador = r*q*(1.0/aux - aux);
+			force =  -2*epsilon/denominador;
+		}else{
+			force = 0;
+		}
+
 	}
 	return force;
 }
