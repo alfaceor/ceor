@@ -26,8 +26,16 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 		printf("# filename= %s doesnt exist!\n",basename);
 		printf("# creating new file %s with random data...\n",basename);
 		fp=fopen(basename,"w");
-		//---------- random variables
-		randomPositions();
+
+		// randomPositions();
+
+		// initial velocities equal to zero.
+		for(int i=0; i<N; i++){
+			for (int d=0; d<DIM; i++){
+				this->chain[i].vec_v[d] = 0;
+			}
+			chain[i].vec_r[0] = chain[i].zigma*i;
+		}
 		//gaussianRandomVelocities(temp); // temp
 
 		for (int i=0;i<N;i++){
@@ -38,8 +46,6 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 			}else{
 				this->chain[i].hydro =  1.0;
 			}
-//			if(i==0 || i==4 || i==8 || i==12) this->chain[i].hydro = -1.0;
-//			else			this->chain[i].hydro =  1.0;
 
 			// save data in a file.
 			fprintf(fp,"%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t\n",
