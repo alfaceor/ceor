@@ -31,8 +31,8 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 
 		// initial velocities equal to zero.
 		for(int i=0; i<N; i++){
-			for (int d=0; d<DIM; i++){
-				this->chain[i].vec_v[d] = 0;
+			for (int d=0; d<DIM; d++){
+				this->chain[i].vec_v[d] = 0.0;
 			}
 			chain[i].vec_r[0] = chain[i].zigma*i;
 		}
@@ -188,8 +188,10 @@ void Conformation::calculateTotalForces(double epsi, double q, double Ec){
 	cleanForces();
 	calculateDeltaR2();
 	calculateBondForces(epsi,q);
+	// FIXME:
+	// Para realizar algunas pruebas de la resistencia de
+	// la cadena se comentan las hydroforces momentaneamente
 	calculateHydroForces(epsi,Ec);
-	//calculateDampingForces();
 }
 
 void Conformation::calculateTotalEnergy(double epsi,double q, double Ec){
