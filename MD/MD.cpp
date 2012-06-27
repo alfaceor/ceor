@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
-	protein.calculateTotalForces(epsi,q,Ec);
+	//protein.calculateTotalForces(epsi,q,Ec);
 	FILE *fp_pdb, *fp_dat;
 	fp_pdb = fopen(filename_pdb,"w");
 	fp_dat = fopen(filename_dat,"w");
