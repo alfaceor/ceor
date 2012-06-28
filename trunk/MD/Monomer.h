@@ -28,6 +28,7 @@ public:
 	double total_force_old[DIM];
 	void actualizeVec_r(double dt);
 	void addPosition2DNoise(double dt, double KT, gsl_rng *r);
+	void addPosition3DNoise(double dt, double KT, gsl_rng *r);
 	void actualizeVec_v(double dt);
 	void print_r();
 	void print_v();
