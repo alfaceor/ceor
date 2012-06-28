@@ -236,6 +236,14 @@ void Conformation::addPosition2DNoise(double dt, double KT, gsl_rng *r){
 
 }
 
+void Conformation::addPosition3DNoise(double dt, double KT, gsl_rng *r){
+
+	for (int i=0;i<N;i++){
+		chain[i].addPosition3DNoise(dt,KT,r);
+	}
+
+}
+
 void Conformation::actualizeVelocities(double dt){
 	for (int i=0;i<N;i++){
 		chain[i].actualizeVec_v(dt);
