@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 	while(ttime<total_time){
 		protein.calculateTotalForces(epsi,q,Ec);
 		protein.actualizePositions(dt);
-		protein.addPosition2DNoise(dt,temp,r);
+		protein.addPosition3DNoise(dt,temp,r);
 		protein.actualizeVelocities(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
 
