@@ -4,7 +4,7 @@ import gdata.docs.client
 client = gdata.docs.client.DocsClient(source='myapp_ceor-v0')
 client.ssl = True
 client.http_client.debug = False
-client.ClientLogin('betaceor@gmail.com','eratostenes',client.source);
+client.ClientLogin('emailr@gmail.com','password',client.source);
 
 def PrintFeed(feed):
   print '\n'
