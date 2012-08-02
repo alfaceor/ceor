@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
 	FILE *fp_pdb, *fp_dat;
 	fp_pdb = fopen(filename_pdb,"w");
 	fp_dat = fopen(filename_dat,"w");
-	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D");
+	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
 	int ttime	= 0;
 
 	const gsl_rng_type *T; T = gsl_rng_default;
