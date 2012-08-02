@@ -25,6 +25,8 @@ public:
 	double PotentialEnergy;	// Potentatial energy
 	double Energy;			// System Energy
 	double Rg;				// Radius of Gyration: the rms distance of each atom to the centroid.
+	double HRg;
+	double PRg;
 	double CenterMass[DIM];
 	double D;				// End to End
 	double *deltaR2;

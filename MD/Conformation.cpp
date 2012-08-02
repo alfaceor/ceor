@@ -42,9 +42,9 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 			//-------------------------
 			// la misma cadena que usa Lois 2008
 			if(hydroChain[i]=='1'){
-				this->chain[i].hydro = -1.0;
+				this->chain[i].hydro = -1.0;	// Polar or hydrophilic
 			}else{
-				this->chain[i].hydro =  1.0;
+				this->chain[i].hydro =  1.0;	// Hydrophobic
 			}
 
 			// save data in a file.
@@ -106,14 +106,32 @@ void Conformation::calculateCenterMass(){
 void Conformation::calculateRg(){
 	// Radius of Gyration: the rms distance of each atom to the centroid.
 	double rms = 0.0;
+	double hrms =0.0;
+	double prms =0.0;
+	double aux = 0.0;
+	int Nh = 0, Np = 0;
 	calculateCenterMass();
 	for (int i=0; i<N; i++){
 		for (int d=0; d<DIM; d++){
-			rms += (chain[i].vec_r[d] - CenterMass[d])*(chain[i].vec_r[d] - CenterMass[d]);
+			aux = (chain[i].vec_r[d] - CenterMass[d])*(chain[i].vec_r[d] - CenterMass[d]);
+			rms += aux;
+			// calculate HRg and PRg
+			if (chain[i].hydro == 1){
+				// Hydrophobic
+				hrms += aux;
+				Nh++;
+			}else{
+				// Polar
+				prms += aux;
+				Np++;
+			}
 		}
 	}
-	Rg =  sqrt(rms/N);
+	Rg = sqrt(rms/N);
+	HRg= sqrt(hrms/Nh);
+	PRg= sqrt(prms/Np);
 }
+
 
 void Conformation::calculateD(){
 	double aux = 0.0;
