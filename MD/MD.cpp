@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 			protein.print_pdb_conformation(fp_pdb,ttime);
 			protein.calculateRg();
 			protein.calculateD();
-			fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+			fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
 		}
 		ttime++;
 	}
