@@ -116,7 +116,7 @@ void Conformation::calculateRg(){
 			aux = (chain[i].vec_r[d] - CenterMass[d])*(chain[i].vec_r[d] - CenterMass[d]);
 			rms += aux;
 			// calculate HRg and PRg
-			if (chain[i].hydro == 1){
+			if (chain[i].hydro == -1.0){
 				// Hydrophobic
 				hrms += aux;
 				Nh++;
@@ -127,6 +127,7 @@ void Conformation::calculateRg(){
 			}
 		}
 	}
+
 	Rg = sqrt(rms/N);
 	HRg= sqrt(hrms/Nh);
 	PRg= sqrt(prms/Np);
@@ -139,6 +140,11 @@ void Conformation::calculateD(){
 		aux += (chain[0].vec_r[d] - chain[N-1].vec_r[d])*(chain[0].vec_r[d] - chain[N-1].vec_r[d]);
 	}
 	D = sqrt(aux);
+}
+
+void Conformation::set_D_to(double Dnew){
+	// TODO: Change the new value of Ends
+	chain[N-1].vec_r[0] = Dnew;
 }
 
 void Conformation::calculateBondForces(double epsi, double q){
@@ -246,6 +252,14 @@ void Conformation::actualizePositions(double dt){
 	}
 }
 
+void Conformation::actualizePositionsFixedEnds(double dt){
+	//printf("%f\t%f\t%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
+	for (int i=1;i<N-1;i++){
+		chain[i].actualizeVec_r(dt);
+	}
+}
+
+
 void Conformation::addPosition2DNoise(double dt, double KT, gsl_rng *r){
 
 	for (int i=0;i<N;i++){
@@ -261,6 +275,15 @@ void Conformation::addPosition3DNoise(double dt, double KT, gsl_rng *r){
 	}
 
 }
+
+void Conformation::addPosition3DNoiseFixedEnds(double dt, double KT, gsl_rng *r){
+
+	for (int i=1;i<N-1;i++){
+		chain[i].addPosition3DNoise(dt,KT,r);
+	}
+
+}
+
 
 void Conformation::actualizeVelocities(double dt){
 	for (int i=0;i<N;i++){
