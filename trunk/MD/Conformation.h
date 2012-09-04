@@ -35,6 +35,7 @@ public:
 	void calculateCenterMass();
 	void calculateRg();
 	void calculateD();
+	void set_D_to(double Dnew);
 	void calculateBondForces(double epsi, double q);
 	void calculateBondPotential(double epsi, double q);
 	void calculateHydroForces(double epsi, double Ec);
@@ -49,8 +50,10 @@ public:
 	void calculateTemperature();
 
 	void actualizePositions(double dt);
+	void actualizePositionsFixedEnds(double dt);
 	void addPosition2DNoise(double dt, double KT, gsl_rng *r);
 	void addPosition3DNoise(double dt, double KT, gsl_rng *r);
+	void addPosition3DNoiseFixedEnds(double dt, double KT, gsl_rng *r);
 	void actualizeVelocities(double dt);
 	void calculateKineticEnergy();
 	void cleanForces();
