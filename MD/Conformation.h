@@ -55,6 +55,7 @@ public:
 	void addPosition3DNoise(double dt, double KT, gsl_rng *r);
 	void addPosition3DNoiseFixedEnds(double dt, double KT, gsl_rng *r);
 	void actualizeVelocities(double dt);
+	void actualizeVelocitiesFixedEnds(double dt);
 	void calculateKineticEnergy();
 	void cleanForces();
 	void cleanEnergyValues();

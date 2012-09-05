@@ -145,6 +145,7 @@ void Conformation::calculateD(){
 void Conformation::set_D_to(double Dnew){
 	// TODO: Change the new value of Ends
 	chain[N-1].vec_r[0] = Dnew;
+	D=Dnew;
 }
 
 void Conformation::calculateBondForces(double epsi, double q){
@@ -287,6 +288,12 @@ void Conformation::addPosition3DNoiseFixedEnds(double dt, double KT, gsl_rng *r)
 
 void Conformation::actualizeVelocities(double dt){
 	for (int i=0;i<N;i++){
+		chain[i].actualizeVec_v(dt);
+	}
+}
+
+void Conformation::actualizeVelocitiesFixedEnds(double dt){
+	for (int i=1;i<N-1;i++){
 		chain[i].actualizeVec_v(dt);
 	}
 }

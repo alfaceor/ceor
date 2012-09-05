@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 	double Ec	=	atof(argv[8]); //-1.0;
 	int print_each	=	atoi(argv[9]);
 
-	char filename_pattern[90];
+	char filename_pattern[100];
 	char filename_pdb[100];
 	char filename_dat[100];
 	char filename_ini[100];
@@ -50,21 +50,15 @@ int main(int argc, char* argv[]) {
 		strcat(filename_pattern,argv[i]);
 	}
 
-	strcpy(filename_pdb,filename_pattern);
-	strcpy(filename_dat,filename_pattern);
 	strcpy(filename_ini,filename_pattern);
-	strcat(filename_pdb,ext_pdb);
-	strcat(filename_dat,ext_dat);
+
 	strcat(filename_ini,ext_ini);
+
 
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
-	protein.calculateD();
-	//protein.calculateTotalForces(epsi,q,Ec);
-	FILE *fp_pdb, *fp_dat;
-	fp_pdb = fopen(filename_pdb,"w");
-	fp_dat = fopen(filename_dat,"w");
-	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
+	protein.calculateD();	// calculate initial D
+
 	int ttime	= 0;
 
 	const gsl_rng_type *T; T = gsl_rng_default;
@@ -73,26 +67,88 @@ int main(int argc, char* argv[]) {
 	seed = time(NULL); // Get the time of the system as seed
 	gsl_rng_set(r,seed);
 
-	double Drate=0.1;
-	while(ttime<total_time){
-		protein.calculateTotalForces(epsi,q,Ec);
-		protein.actualizePositionsFixedEnds(dt);			// FIXME: fix positions to the ends
-		protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
-		protein.actualizeVelocities(dt);
-		protein.calculateTotalEnergy(epsi,q,Ec);
-		protein.set_D_to(protein.D - Drate*dt);
+	double Drate=1;
+	double ttrans=1000;
+	// total simulation
+	for(int i=0; i<120; i++){
 
-		if (ttime % print_each == 0){
-			protein.print_pdb_conformation(fp_pdb,ttime);
-			protein.calculateRg();
-			//protein.calculateD();
-			fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+		// create number sufix
+		char tmpnum[4];
+		if (i<10) sprintf (tmpnum, "_00%d", i);
+		else if(i<100) sprintf (tmpnum, "_0%d", i);
+		else sprintf (tmpnum, "_%d", i);
+
+		// copy the filename pattern
+		strcpy(filename_pdb,filename_pattern);
+		strcpy(filename_dat,filename_pattern);
+
+		// add number sufix, transition sufix and file extension
+		strcat(filename_pdb,tmpnum); strcat(filename_pdb,"trans"); strcat(filename_pdb,ext_pdb);
+		strcat(filename_dat,tmpnum); strcat(filename_dat,"trans"); strcat(filename_dat,ext_dat);
+
+		// open files to write data
+		FILE *fp_pdb, *fp_dat;
+		fp_pdb = fopen(filename_pdb,"w");
+		fp_dat = fopen(filename_dat,"w");
+
+		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
+
+		ttime	= 0;
+		while(ttime<ttrans){
+			protein.calculateTotalForces(epsi,q,Ec);
+			protein.actualizePositionsFixedEnds(dt);			// FIXME: fix positions to the ends
+			protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
+			protein.actualizeVelocitiesFixedEnds(dt);
+			protein.calculateTotalEnergy(epsi,q,Ec);
+			protein.set_D_to(protein.D - Drate*dt);
+
+
+			if (ttime % print_each == 0){
+				protein.print_pdb_conformation(fp_pdb,ttime);
+				protein.calculateRg();
+				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+			}
+			ttime++;
 		}
-		ttime++;
+
+		// close transition files
+		fclose(fp_pdb);
+		fclose(fp_dat);
+
+		// copy the filename pattern
+		strcpy(filename_pdb,filename_pattern);
+		strcpy(filename_dat,filename_pattern);
+
+		// add number sufix, transition sufix and file extension
+		strcat(filename_pdb,tmpnum); strcat(filename_pdb,"Dfix"); strcat(filename_pdb,ext_pdb);
+		strcat(filename_dat,tmpnum); strcat(filename_dat,"Dfix"); strcat(filename_dat,ext_dat);
+
+		// open files to write data
+		fp_pdb = fopen(filename_pdb,"w");
+		fp_dat = fopen(filename_dat,"w");
+
+		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
+
+		ttime=0;
+		while(ttime<total_time){
+			protein.calculateTotalForces(epsi,q,Ec);
+			protein.actualizePositionsFixedEnds(dt);			// FIXME: fix positions to the ends
+			protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
+			protein.actualizeVelocitiesFixedEnds(dt);
+			protein.calculateTotalEnergy(epsi,q,Ec);
+
+			if (ttime % print_each == 0){
+				protein.print_pdb_conformation(fp_pdb,ttime);
+				protein.calculateRg();
+				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+			}
+			ttime++;
+		}
+		// close D fixed files
+		fclose(fp_pdb);
+		fclose(fp_dat);
 	}
 
-	fclose(fp_pdb);
-	fclose(fp_dat);
 
 	printf("# END SIMULATION\n");
 
