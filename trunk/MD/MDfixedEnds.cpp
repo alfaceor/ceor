@@ -16,6 +16,34 @@
 
 #include "Conformation.h"
 
+// Python External scripts
+void pyplot_time_evolution(char *filename_dat){
+	char *strcmd;
+	strcpy(strcmd,"grafica_evolucion_temporal_Dfixed.py ");
+	strcat(strcmd,filename_dat);
+	system(strcmd);
+}
+
+void pyplot_transition_matrix(char *filename_dat){
+	char *strcmd;
+	strcpy(strcmd,"TransitionMatrix.py ");
+	strcat(strcmd,filename_dat);
+	system(strcmd);
+}
+
+// Shell tools
+void shell_compress_pdbfiles(char *filename_pattern){
+	char strcmd[250];
+	strcpy(strcmd,"tar cvzf pdbfiles");
+	strcat(strcmd,filename_pattern);
+	strcat(strcmd,".tar.gz *.pdb");
+	system(strcmd);
+	system("rm *.pdb");
+}
+
+
+
+/*************************** MAIN ***************************/
 
 int main(int argc, char* argv[]) {
 	// input parameters
@@ -69,8 +97,11 @@ int main(int argc, char* argv[]) {
 
 	double Drate=1;
 	double ttrans=1000;
-	// total simulation
-	for(int i=0; i<120; i++){
+	char strcmd[150];
+
+	// FIXME: make a better version for the minimun D
+	// total simulation until get the minimun D
+	for(int i=0; i<14; i++){
 
 		// create number sufix
 		char tmpnum[4];
@@ -102,7 +133,6 @@ int main(int argc, char* argv[]) {
 			protein.calculateTotalEnergy(epsi,q,Ec);
 			protein.set_D_to(protein.D - Drate*dt);
 
-
 			if (ttime % print_each == 0){
 				protein.print_pdb_conformation(fp_pdb,ttime);
 				protein.calculateRg();
@@ -114,6 +144,9 @@ int main(int argc, char* argv[]) {
 		// close transition files
 		fclose(fp_pdb);
 		fclose(fp_dat);
+
+		// time evolution plot
+		pyplot_time_evolution(filename_dat);
 
 		// copy the filename pattern
 		strcpy(filename_pdb,filename_pattern);
@@ -147,10 +180,15 @@ int main(int argc, char* argv[]) {
 		// close D fixed files
 		fclose(fp_pdb);
 		fclose(fp_dat);
+
+		// time evolution plot
+		pyplot_time_evolution(filename_dat);
+		pyplot_transition_matrix(filename_dat);
 	}
 
 
 	printf("# END SIMULATION\n");
+	shell_compress_pdbfiles(filename_pattern);
 
 	return EXIT_SUCCESS;
 }
