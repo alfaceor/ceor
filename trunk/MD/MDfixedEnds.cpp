@@ -18,29 +18,32 @@
 
 // Python External scripts
 void pyplot_time_evolution(char *filename_dat){
-	char *strcmd;
+	char *strcmd = (char *) malloc((strlen(filename_dat)+50)*sizeof(char));
 	strcpy(strcmd,"grafica_evolucion_temporal_Dfixed.py ");
 	strcat(strcmd,filename_dat);
+//	free(strcmd);
 	system(strcmd);
 }
 
 void pyplot_transition_matrix(char *filename_dat){
-	char *strcmd;
+	char *strcmd = (char *) malloc((strlen(filename_dat)+50)*sizeof(char));
 	strcpy(strcmd,"TransitionMatrix.py ");
 	strcat(strcmd,filename_dat);
+//	free(strcmd);
 	system(strcmd);
 }
 
+
 // Shell tools
 void shell_compress_pdbfiles(char *filename_pattern){
-	char strcmd[250];
+	char *strcmd = (char *) malloc((strlen(filename_pattern)+50)*sizeof(char));
 	strcpy(strcmd,"tar cvzf pdbfiles");
 	strcat(strcmd,filename_pattern);
 	strcat(strcmd,".tar.gz *.pdb");
 	system(strcmd);
+//	free(strcmd);
 	system("rm *.pdb");
 }
-
 
 
 /*************************** MAIN ***************************/
@@ -79,9 +82,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	strcpy(filename_ini,filename_pattern);
-
 	strcat(filename_ini,ext_ini);
-
 
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
@@ -97,8 +98,6 @@ int main(int argc, char* argv[]) {
 
 	double Drate=1;
 	double ttrans=1000;
-	char strcmd[150];
-
 	// FIXME: make a better version for the minimun D
 	// total simulation until get the minimun D
 	for(int i=0; i<14; i++){
