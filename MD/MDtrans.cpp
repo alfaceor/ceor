@@ -19,7 +19,7 @@
 // Python External scripts
 void pyplot_time_evolution(char *filename_dat){
 	char *strcmd = (char *) malloc((strlen(filename_dat)+50)*sizeof(char));
-	strcpy(strcmd,"grafica_evolucion_temporal_Dfixed.py ");
+	strcpy(strcmd,"grafica_evolucion_temporal_Dtrans.py ");
 	strcat(strcmd,filename_dat);
 //	free(strcmd);
 	system(strcmd);
@@ -50,7 +50,7 @@ void shell_compress_pdbfiles(char *filename_pattern){
 
 int main(int argc, char* argv[]) {
 	// input parameters
-	if(argc != 10){
+	if(argc != 11){
 		printf("Usage: MD [rev_prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
 		return EXIT_FAILURE;
 	}
@@ -66,6 +66,8 @@ int main(int argc, char* argv[]) {
 	double q	=	atof(argv[7]); //0.1;
 	double Ec	=	atof(argv[8]); //-1.0;
 	int print_each	=	atoi(argv[9]);
+	double Drate	=	atof(argv[10]); // 1
+
 
 	char filename_pattern[100];
 	char filename_pdb[100];
@@ -96,11 +98,9 @@ int main(int argc, char* argv[]) {
 	seed = time(NULL); // Get the time of the system as seed
 	gsl_rng_set(r,seed);
 
-	double Drate=1;
-	double ttrans=1000;
 	// FIXME: make a better version for the minimun D
 	// total simulation until get the minimun D
-	for(int i=0; i<14; i++){
+	for(int i=0; i<2; i++){
 
 		// create number sufix
 		char tmpnum[4];
@@ -124,7 +124,7 @@ int main(int argc, char* argv[]) {
 		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
 
 		ttime	= 0;
-		while(ttime<ttrans){
+		while(protein.D > 1){
 			protein.calculateTotalForces(epsi,q,Ec);
 			protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
 			protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
@@ -141,42 +141,6 @@ int main(int argc, char* argv[]) {
 		}
 
 		// close transition files
-		fclose(fp_pdb);
-		fclose(fp_dat);
-
-		// time evolution plot
-		pyplot_time_evolution(filename_dat);
-
-		// copy the filename pattern
-		strcpy(filename_pdb,filename_pattern);
-		strcpy(filename_dat,filename_pattern);
-
-		// add number sufix, transition sufix and file extension
-		strcat(filename_pdb,tmpnum); strcat(filename_pdb,"Dfix"); strcat(filename_pdb,ext_pdb);
-		strcat(filename_dat,tmpnum); strcat(filename_dat,"Dfix"); strcat(filename_dat,ext_dat);
-
-		// open files to write data
-		fp_pdb = fopen(filename_pdb,"w");
-		fp_dat = fopen(filename_dat,"w");
-
-		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
-
-		ttime=0;
-		while(ttime<total_time){
-			protein.calculateTotalForces(epsi,q,Ec);
-			protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
-			protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
-			protein.actualizeVelocitiesFixedEnds(dt);
-			protein.calculateTotalEnergy(epsi,q,Ec);
-
-			if (ttime % print_each == 0){
-				protein.print_pdb_conformation(fp_pdb,ttime);
-				protein.calculateRg();
-				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
-			}
-			ttime++;
-		}
-		// close D fixed files
 		fclose(fp_pdb);
 		fclose(fp_dat);
 
