@@ -1,10 +1,10 @@
 CXXFLAGS =	-g -Wall -fmessage-length=0
 
-OBJS =	MDfixedEnds.o Monomer.o Conformation.o util_functions.o
+OBJS =	MDtrans.o Monomer.o Conformation.o util_functions.o
 
 LIBS = -lgsl -lgslcblas -lm
 
-TARGET =	MDfixedEnds
+TARGET =	MDtrans
 
 %.o: %.c
 	$(COMPILE) -c $< -o $@
