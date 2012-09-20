@@ -87,7 +87,8 @@ int main(int argc, char* argv[]) {
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
 	protein.calculateD();	// calculate initial D
-
+	double Dmax = protein.D;
+	double Dmin = 1.0;
 	int ttime	= 0;
 
 	const gsl_rng_type *T; T = gsl_rng_default;
@@ -98,15 +99,26 @@ int main(int argc, char* argv[]) {
 
 	double Drate=1;
 	double ttrans=1000;
-	// FIXME: make a better version for the minimun D
-	// total simulation until get the minimun D
-	for(int i=0; i<14; i++){
 
+	while( protein.D > Dmax/2.0 ){
+		// TODO: transition to the half of Dmax
+		protein.calculateTotalForces(epsi,q,Ec);
+		protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
+		protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
+		protein.actualizeVelocitiesFixedEnds(dt);
+		protein.calculateTotalEnergy(epsi,q,Ec);
+		protein.set_D_to(protein.D - Drate*dt);
+	}
+
+	// Initiate the process
+	int count=0;
+	while (protein.D > Dmin){
+		count++;
 		// create number sufix
 		char tmpnum[4];
-		if (i<10) sprintf (tmpnum, "_00%d", i);
-		else if(i<100) sprintf (tmpnum, "_0%d", i);
-		else sprintf (tmpnum, "_%d", i);
+		if (count<10) sprintf (tmpnum, "_00%d", count);
+		else if(count<100) sprintf (tmpnum, "_0%d", count);
+		else sprintf (tmpnum, "_%d", count);
 
 		// copy the filename pattern
 		strcpy(filename_pdb,filename_pattern);
@@ -172,7 +184,7 @@ int main(int argc, char* argv[]) {
 			if (ttime % print_each == 0){
 				protein.print_pdb_conformation(fp_pdb,ttime);
 				protein.calculateRg();
-				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+				fprintf(fp_dat,"%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",dt*ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
 			}
 			ttime++;
 		}

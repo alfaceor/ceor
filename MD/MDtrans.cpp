@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
 	int print_each	=	atoi(argv[9]);
 	double Drate	=	atof(argv[10]); // 1
 
+	double Dmin	= 1.0;
 
 	char filename_pattern[100];
 	char filename_pdb[100];
@@ -101,7 +102,10 @@ int main(int argc, char* argv[]) {
 	// FIXME: make a better version for the minimun D
 	// total simulation until get the minimun D
 	for(int i=0; i<2; i++){
-
+		// To avoid creation of empty files
+		if (protein.D < Dmin){
+			break;
+		}
 		// create number sufix
 		char tmpnum[4];
 		if (i<10) sprintf (tmpnum, "_00%d", i);
@@ -124,7 +128,7 @@ int main(int argc, char* argv[]) {
 		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
 
 		ttime	= 0;
-		while(protein.D > 1){
+		while(protein.D > Dmin){
 			protein.calculateTotalForces(epsi,q,Ec);
 			protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
 			protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
@@ -146,7 +150,7 @@ int main(int argc, char* argv[]) {
 
 		// time evolution plot
 		pyplot_time_evolution(filename_dat);
-		pyplot_transition_matrix(filename_dat);
+		//pyplot_transition_matrix(filename_dat);
 	}
 
 
