@@ -46,6 +46,20 @@ void shell_compress_pdbfiles(char *filename_pattern){
 }
 
 
+struct parameters {
+	char *prefix_file, *hydroChain;
+	const int M;
+	double temp;
+	int total_time;
+	double dt;
+	double epsi;
+	double q;
+	double Ec;
+	int print_each;
+	double Drate;
+	double Dmin;
+}
+
 /*************************** MAIN ***************************/
 
 int main(int argc, char* argv[]) {
