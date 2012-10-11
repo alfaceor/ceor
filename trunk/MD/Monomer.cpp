@@ -55,6 +55,7 @@ void Monomer::addPosition3DNoise(double dt, double KT, gsl_rng *r){
 	double etha=sqrt(2*KT*dt)*gsl_ran_gaussian(r,1);
 	double teta=gsl_rng_uniform_pos(r);
 	double phi =gsl_rng_uniform_pos(r);
+	//printf("%lf\t%lf\t%lf\n",etha,teta,phi);
 	vec_r[0] += etha*sin(teta)*cos(phi);
 	vec_r[1] += etha*sin(teta)*sin(phi);
 	vec_r[2] += etha*cos(teta);
