@@ -33,7 +33,6 @@ void pyplot_transition_matrix(char *filename_dat){
 	system(strcmd);
 }
 
-
 // Shell tools
 void shell_compress_pdbfiles(char *filename_pattern){
 	char *strcmd = (char *) malloc((strlen(filename_pattern)+50)*sizeof(char));
@@ -45,20 +44,6 @@ void shell_compress_pdbfiles(char *filename_pattern){
 	system("rm *.pdb");
 }
 
-
-struct parameters {
-	char *prefix_file, *hydroChain;
-	const int M;
-	double temp;
-	int total_time;
-	double dt;
-	double epsi;
-	double q;
-	double Ec;
-	int print_each;
-	double Drate;
-	double Dmin;
-}
 
 /*************************** MAIN ***************************/
 
