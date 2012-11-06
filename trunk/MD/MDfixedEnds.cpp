@@ -97,75 +97,18 @@ int main(int argc, char* argv[]) {
 	seed = time(NULL); // Get the time of the system as seed
 	gsl_rng_set(r,seed);
 
-	double Drate=1;
-	double ttrans=1000;
-
-	while( protein.D > Dmax/2.0 ){
-		// TODO: transition to the half of Dmax
-		protein.calculateTotalForces(epsi,q,Ec);
-		protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
-		protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
-		protein.actualizeVelocitiesFixedEnds(dt);
-		protein.calculateTotalEnergy(epsi,q,Ec);
-		protein.set_D_to(protein.D - Drate*dt);
-	}
-
-	// Initiate the process
-	int count=0;
-	while (protein.D > Dmin){
-		count++;
-		// create number sufix
-		char tmpnum[4];
-		if (count<10) sprintf (tmpnum, "_00%d", count);
-		else if(count<100) sprintf (tmpnum, "_0%d", count);
-		else sprintf (tmpnum, "_%d", count);
-
-		// copy the filename pattern
-		strcpy(filename_pdb,filename_pattern);
-		strcpy(filename_dat,filename_pattern);
-
-		// add number sufix, transition sufix and file extension
-		strcat(filename_pdb,tmpnum); strcat(filename_pdb,"trans"); strcat(filename_pdb,ext_pdb);
-		strcat(filename_dat,tmpnum); strcat(filename_dat,"trans"); strcat(filename_dat,ext_dat);
-
 		// open files to write data
 		FILE *fp_pdb, *fp_dat;
 		fp_pdb = fopen(filename_pdb,"w");
 		fp_dat = fopen(filename_dat,"w");
 
-		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
-
-		ttime	= 0;
-		while(ttime<ttrans){
-			protein.calculateTotalForces(epsi,q,Ec);
-			protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
-			protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
-			protein.actualizeVelocitiesFixedEnds(dt);
-			protein.calculateTotalEnergy(epsi,q,Ec);
-			protein.set_D_to(protein.D - Drate*dt);
-
-			if (ttime % print_each == 0){
-				protein.print_pdb_conformation(fp_pdb,ttime);
-				protein.calculateRg();
-				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
-			}
-			ttime++;
-		}
-
-		// close transition files
-		fclose(fp_pdb);
-		fclose(fp_dat);
-
-		// time evolution plot
-		pyplot_time_evolution(filename_dat);
-
 		// copy the filename pattern
 		strcpy(filename_pdb,filename_pattern);
 		strcpy(filename_dat,filename_pattern);
 
 		// add number sufix, transition sufix and file extension
-		strcat(filename_pdb,tmpnum); strcat(filename_pdb,"Dfix"); strcat(filename_pdb,ext_pdb);
-		strcat(filename_dat,tmpnum); strcat(filename_dat,"Dfix"); strcat(filename_dat,ext_dat);
+		strcat(filename_pdb,ext_pdb);
+		strcat(filename_dat,ext_dat);
 
 		// open files to write data
 		fp_pdb = fopen(filename_pdb,"w");
@@ -192,14 +135,8 @@ int main(int argc, char* argv[]) {
 		fclose(fp_pdb);
 		fclose(fp_dat);
 
-		// time evolution plot
-		pyplot_time_evolution(filename_dat);
-		pyplot_transition_matrix(filename_dat);
-	}
-
-
 	printf("# END SIMULATION\n");
-	shell_compress_pdbfiles(filename_pattern);
+//	shell_compress_pdbfiles(filename_pattern);
 
 	return EXIT_SUCCESS;
 }
