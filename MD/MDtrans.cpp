@@ -16,6 +16,7 @@
 
 #include "Conformation.h"
 
+/**********
 // Python External scripts
 void pyplot_time_evolution(char *filename_dat){
 	char *strcmd = (char *) malloc((strlen(filename_dat)+50)*sizeof(char));
@@ -44,13 +45,14 @@ void shell_compress_pdbfiles(char *filename_pattern){
 	system("rm *.pdb");
 }
 
+**********/
 
 /*************************** MAIN ***************************/
 
 int main(int argc, char* argv[]) {
 	// input parameters
-	if(argc != 11){
-		printf("Usage: MD [rev_prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each]\n");
+	if(argc != 12){
+		printf("Usage: MD [rev_prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each] [Drate] [Dfin]\n");
 		return EXIT_FAILURE;
 	}
 
@@ -66,8 +68,7 @@ int main(int argc, char* argv[]) {
 	double Ec	=	atof(argv[8]); //-1.0;
 	int print_each	=	atoi(argv[9]);
 	double Drate	=	atof(argv[10]); // 1
-
-	double Dmin	= 1.0;
+	double Dfin	= atof(argv[11]);//1.0;
 
 	char filename_pattern[100];
 	char filename_pdb[100];
@@ -78,7 +79,7 @@ int main(int argc, char* argv[]) {
 	char ext_ini[]=".ini";
 
 	strcpy(filename_pattern,prefix_file);
-	for (int i=2;i<argc;i++){
+	for (int i=2;i<argc;i++){ // Don't print the Drate, Dfin
 		strcat(filename_pattern,"_");
 		strcat(filename_pattern,argv[i]);
 	}
@@ -89,6 +90,10 @@ int main(int argc, char* argv[]) {
 	//----------------- Simulation
 	Conformation protein(M, hydroChain, temp, filename_ini);
 	protein.calculateD();	// calculate initial D
+	double Dini = protein.D;
+	printf("M= %d,protein.N,Dini = %f\n",M,protein.D);
+
+	// TODO: Validate the values of Dfin and Drate
 
 	int ttime	= 0;
 
@@ -98,11 +103,12 @@ int main(int argc, char* argv[]) {
 	seed = time(NULL); // Get the time of the system as seed
 	gsl_rng_set(r,seed);
 
+	/*
 	// FIXME: make a better version for the minimun D
 	// total simulation until get the minimun D
 	for(int i=0; i<2; i++){
 		// To avoid creation of empty files
-		if (protein.D < Dmin){
+		if (protein.D < Dfin){
 			break;
 		}
 		// create number sufix
@@ -110,14 +116,14 @@ int main(int argc, char* argv[]) {
 		if (i<10) sprintf (tmpnum, "_00%d", i);
 		else if(i<100) sprintf (tmpnum, "_0%d", i);
 		else sprintf (tmpnum, "_%d", i);
-
+*/
 		// copy the filename pattern
 		strcpy(filename_pdb,filename_pattern);
 		strcpy(filename_dat,filename_pattern);
 
 		// add number sufix, transition sufix and file extension
-		strcat(filename_pdb,tmpnum); strcat(filename_pdb,"trans"); strcat(filename_pdb,ext_pdb);
-		strcat(filename_dat,tmpnum); strcat(filename_dat,"trans"); strcat(filename_dat,ext_dat);
+		strcat(filename_pdb,ext_pdb);
+		strcat(filename_dat,ext_dat);
 
 		// open files to write data
 		FILE *fp_pdb, *fp_dat;
@@ -127,20 +133,55 @@ int main(int argc, char* argv[]) {
 		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
 
 		ttime	= 0;
-		while(protein.D > Dmin){
-			protein.calculateTotalForces(epsi,q,Ec);
-			protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
-			protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
-			protein.actualizeVelocitiesFixedEnds(dt);
-			protein.calculateTotalEnergy(epsi,q,Ec);
-			protein.set_D_to(protein.D - Drate*dt);
+		// Disminuye el valor de D
+		if ( Dini > Dfin ){
+			if (Drate > 0){
+				// Run the program
+				while(protein.D > Dfin){ // D must decrease
+					protein.calculateTotalForces(epsi,q,Ec);
+					protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
+					protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
+					protein.actualizeVelocitiesFixedEnds(dt);
+					protein.calculateTotalEnergy(epsi,q,Ec);
+					protein.set_D_to(protein.D - Drate*dt);
 
-			if (ttime % print_each == 0){
-				protein.print_pdb_conformation(fp_pdb,ttime);
-				protein.calculateRg();
-				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+					if (ttime % print_each == 0){
+						protein.print_pdb_conformation(fp_pdb,ttime);
+						protein.calculateRg();
+						fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+					}
+					ttime++;
+				}
+			} else{
+				printf("Bad paramaters: Drate must be POSITIVE\n");
+				return EXIT_FAILURE;
 			}
-			ttime++;
+		} else if ( Dini < Dfin ){	// Aumenta el valor de D
+			if (Drate < 0){
+				// Run the program
+				while(protein.D < Dfin){ // D must increase until reach Dfin
+					protein.calculateTotalForces(epsi,q,Ec);
+					protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
+					protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
+					protein.actualizeVelocitiesFixedEnds(dt);
+					protein.calculateTotalEnergy(epsi,q,Ec);
+					protein.set_D_to(protein.D - Drate*dt);
+
+					if (ttime % print_each == 0){
+						protein.print_pdb_conformation(fp_pdb,ttime);
+						protein.calculateRg();
+						fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+					}
+					ttime++;
+				}
+
+			} else{
+				printf("Bad paramaters: Drate must be NEGATIVE\n");
+				return EXIT_FAILURE;
+			}
+		}
+		else{
+			printf("fuck u!!");
 		}
 
 		// close transition files
@@ -148,13 +189,12 @@ int main(int argc, char* argv[]) {
 		fclose(fp_dat);
 
 		// time evolution plot
-		pyplot_time_evolution(filename_dat);
+		// pyplot_time_evolution(filename_dat);
 		//pyplot_transition_matrix(filename_dat);
-	}
 
 
 	printf("# END SIMULATION\n");
-	shell_compress_pdbfiles(filename_pattern);
+	//shell_compress_pdbfiles(filename_pattern);
 
 	return EXIT_SUCCESS;
 }

@@ -1,6 +1,6 @@
 CXXFLAGS =	-g -Wall -fmessage-length=0
 
-TARGET =	MDfixedEnds
+TARGET =	MD
 
 OBJS =	$(TARGET).o Monomer.o Conformation.o util_functions.o
 

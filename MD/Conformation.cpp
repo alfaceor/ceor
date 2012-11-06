@@ -21,8 +21,8 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 	FILE *fp;
 	fp=fopen(basename,"r");
 	//FIXME: temporal flag remove later
-//	if(fp==NULL){
-	if(true){
+	if(fp==NULL){
+//	if(true){
 		printf("# filename= %s doesnt exist!\n",basename);
 		printf("# creating new file %s with random data...\n",basename);
 		fp=fopen(basename,"w");
@@ -30,7 +30,7 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 		// randomPositions();
 
 		// initial velocities equal to zero.
-		for(int i=0; i<N; i++){
+		for(int i=0; i< N; i++){
 			for (int d=0; d<DIM; d++){
 				this->chain[i].vec_v[d] = 0.0;
 			}
@@ -136,8 +136,10 @@ void Conformation::calculateRg(){
 
 void Conformation::calculateD(){
 	double aux = 0.0;
+	double vecdiff=0.0;
 	for (int d=0; d<DIM; d++){
-		aux += (chain[0].vec_r[d] - chain[N-1].vec_r[d])*(chain[0].vec_r[d] - chain[N-1].vec_r[d]);
+		vecdiff=(chain[0].vec_r[d] - chain[N-1].vec_r[d]);
+		aux += vecdiff*vecdiff;
 	}
 	D = sqrt(aux);
 }
