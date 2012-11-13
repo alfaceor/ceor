@@ -16,6 +16,7 @@
 
 #include "Conformation.h"
 
+/*
 // Python External scripts
 void pyplot_time_evolution(char *filename_dat){
 	char *strcmd = (char *) malloc((strlen(filename_dat)+50)*sizeof(char));
@@ -44,6 +45,7 @@ void shell_compress_pdbfiles(char *filename_pattern){
 //	free(strcmd);
 	system("rm *.pdb");
 }
+*/
 
 
 /*************************** MAIN ***************************/
@@ -99,8 +101,6 @@ int main(int argc, char* argv[]) {
 
 		// open files to write data
 		FILE *fp_pdb, *fp_dat;
-		fp_pdb = fopen(filename_pdb,"w");
-		fp_dat = fopen(filename_dat,"w");
 
 		// copy the filename pattern
 		strcpy(filename_pdb,filename_pattern);
@@ -115,8 +115,17 @@ int main(int argc, char* argv[]) {
 		fp_dat = fopen(filename_dat,"w");
 
 		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
+		// FIXME: TENGO que hacer una translacion y luego una rotacion
 
+		protein.print_pdb_conformation(fp_pdb,-2);
 		ttime=0;
+		protein.displace(-protein.chain[0].vec_r[0],-protein.chain[0].vec_r[1],-protein.chain[0].vec_r[2]);
+		protein.print_pdb_conformation(fp_pdb,-1);
+		// calcular el angulo a rotar en polar
+		//protein.alingWithDaxis();
+
+		protein.print_pdb_conformation(fp_pdb,0);
+
 		while(ttime<total_time){
 			protein.calculateTotalForces(epsi,q,Ec);
 			protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
@@ -131,6 +140,8 @@ int main(int argc, char* argv[]) {
 			}
 			ttime++;
 		}
+
+
 		// close D fixed files
 		fclose(fp_pdb);
 		fclose(fp_dat);
@@ -139,4 +150,5 @@ int main(int argc, char* argv[]) {
 //	shell_compress_pdbfiles(filename_pattern);
 
 	return EXIT_SUCCESS;
+
 }

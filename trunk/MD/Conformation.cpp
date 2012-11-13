@@ -64,6 +64,7 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 				fscanf(fp,"%lf",&this->chain[i].vec_v[d]);
 			}
 			fscanf(fp,"%lf",&this->chain[i].hydro);
+			//printf("chain[%d].hydro = %f\n",i,this->chain[i].hydro);
 		}
 	}
 
@@ -308,6 +309,52 @@ void Conformation::calculateKineticEnergy(){
 		}
 	}
 	KinecticEnergy=0.5*kinectic_energy;
+}
+
+void Conformation::displace(double d_x, double d_y, double d_z){
+	// TODO: make a displacement
+//	double vec_displace[3];
+//	vec_displace[0]= - chain[0].vec_r[0];
+//	vec_displace[1]= - chain[0].vec_r[1];
+//	vec_displace[2]= - chain[0].vec_r[2];
+	for (int i=0; i<N; i++){
+		chain[i].vec_r[0] = chain[i].vec_r[0] + d_x;
+		chain[i].vec_r[1] = chain[i].vec_r[1] + d_y;
+		chain[i].vec_r[2] = chain[i].vec_r[2] + d_z;
+	}
+}
+
+void Conformation::alingWithDaxis(){
+
+	printf("Before rotate\n%f\t%f\%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
+
+	double unaryDvec[2];
+	double norma = sqrt( (chain[N-1].vec_r[0])*(chain[N-1].vec_r[0])+
+			(chain[N-1].vec_r[1])*(chain[N-1].vec_r[1]) );
+
+	unaryDvec[0]=chain[N-1].vec_r[0]/norma; // Cos(phy)
+	unaryDvec[1]=chain[N-1].vec_r[1]/norma; // -Sin(phy)
+
+	// Primero en los ejes XY
+	for (int i=0; i<N; i++){
+		chain[i].vec_r[0] =  unaryDvec[0]*chain[i].vec_r[0]+unaryDvec[1]*chain[i].vec_r[1];
+		chain[i].vec_r[1] = -unaryDvec[1]*chain[i].vec_r[0]+unaryDvec[0]*chain[i].vec_r[1];
+	}
+
+	// XZ norma
+	norma = sqrt( (chain[N-1].vec_r[0])*(chain[N-1].vec_r[0])+
+			(chain[N-1].vec_r[2])*(chain[N-1].vec_r[2]) );
+
+	unaryDvec[0]=chain[N-1].vec_r[0]/norma; // Cos(phy)
+	unaryDvec[1]=chain[N-1].vec_r[2]/norma; // -Sin(phy)
+
+	// Primero en los ejes XY
+	for (int i=0; i<N; i++){
+		chain[i].vec_r[0] =  unaryDvec[1]*chain[i].vec_r[0]+unaryDvec[0]*chain[i].vec_r[2];
+		chain[i].vec_r[2] = -unaryDvec[0]*chain[i].vec_r[0]+unaryDvec[1]*chain[i].vec_r[2];
+	}
+
+	printf("After rotate\n%f\t%f\%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
 }
 
 void Conformation::cleanForces(){
