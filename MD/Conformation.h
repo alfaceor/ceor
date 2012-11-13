@@ -57,6 +57,10 @@ public:
 	void actualizeVelocities(double dt);
 	void actualizeVelocitiesFixedEnds(double dt);
 	void calculateKineticEnergy();
+
+	void displace(double d_x, double d_y, double d_z);
+	void alingWithDaxis();
+
 	void cleanForces();
 	void cleanEnergyValues();
 	void randomPositions();
