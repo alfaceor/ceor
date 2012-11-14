@@ -326,35 +326,48 @@ void Conformation::displace(double d_x, double d_y, double d_z){
 
 void Conformation::alingWithDaxis(){
 
-	printf("Before rotate\n%f\t%f\%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
+	printf("Before DISPLACE\n%f\t%f\t%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
 
-	double unaryDvec[2];
-	double norma = sqrt( (chain[N-1].vec_r[0])*(chain[N-1].vec_r[0])+
-			(chain[N-1].vec_r[1])*(chain[N-1].vec_r[1]) );
+	displace(-chain[0].vec_r[0],-chain[0].vec_r[1],-chain[0].vec_r[2]);
+	printf("Before rotate\n%f\t%f\t%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
 
-	unaryDvec[0]=chain[N-1].vec_r[0]/norma; // Cos(phy)
-	unaryDvec[1]=chain[N-1].vec_r[1]/norma; // -Sin(phy)
+	double norma_xyz = sqrt(
+			(chain[N-1].vec_r[0])*(chain[N-1].vec_r[0])+
+			(chain[N-1].vec_r[1])*(chain[N-1].vec_r[1])+
+			(chain[N-1].vec_r[2])*(chain[N-1].vec_r[2])
+			);
 
-	// Primero en los ejes XY
+	double norma_xy = sqrt(
+			(chain[N-1].vec_r[0])*(chain[N-1].vec_r[0])+
+			(chain[N-1].vec_r[1])*(chain[N-1].vec_r[1])
+			);
+
+	printf("norma_xy=%f\tnorma_xyz=%f\n",norma_xy,norma_xyz);
+	double cos_phi = chain[N-1].vec_r[0]/norma_xy;
+	double sin_phi = chain[N-1].vec_r[1]/norma_xy;
+	double cos_tetha = chain[N-1].vec_r[2]/norma_xyz;
+	double sin_tetha = norma_xy/norma_xyz;
+
+	//Rotation in polar angle
 	for (int i=0; i<N; i++){
-		chain[i].vec_r[0] =  unaryDvec[0]*chain[i].vec_r[0]+unaryDvec[1]*chain[i].vec_r[1];
-		chain[i].vec_r[1] = -unaryDvec[1]*chain[i].vec_r[0]+unaryDvec[0]*chain[i].vec_r[1];
+		double aux0	=  chain[i].vec_r[0]*cos_phi + chain[i].vec_r[1]*sin_phi;
+		double aux1	= -chain[i].vec_r[0]*sin_phi + chain[i].vec_r[1]*cos_phi;
+		chain[i].vec_r[0] = aux0;
+		chain[i].vec_r[1] = aux1;
 	}
 
-	// XZ norma
-	norma = sqrt( (chain[N-1].vec_r[0])*(chain[N-1].vec_r[0])+
-			(chain[N-1].vec_r[2])*(chain[N-1].vec_r[2]) );
+	printf("After rotate Polar \n%f\t%f\t%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
 
-	unaryDvec[0]=chain[N-1].vec_r[0]/norma; // Cos(phy)
-	unaryDvec[1]=chain[N-1].vec_r[2]/norma; // -Sin(phy)
-
-	// Primero en los ejes XY
-	for (int i=0; i<N; i++){
-		chain[i].vec_r[0] =  unaryDvec[1]*chain[i].vec_r[0]+unaryDvec[0]*chain[i].vec_r[2];
-		chain[i].vec_r[2] = -unaryDvec[0]*chain[i].vec_r[0]+unaryDvec[1]*chain[i].vec_r[2];
+	//Rotation in azimutal angle
+	for (int i=0; i< N; i++){
+		double aux0 =  chain[i].vec_r[0]*sin_tetha + chain[i].vec_r[2]*cos_tetha;
+		double aux2 =  chain[i].vec_r[0]*cos_tetha - chain[i].vec_r[2]*sin_tetha;
+		chain[i].vec_r[0] = aux0;
+		chain[i].vec_r[2] = aux2;
 	}
 
-	printf("After rotate\n%f\t%f\%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
+
+	printf("After rotate azimutal\n%f\t%f\t%f\n",chain[N-1].vec_r[0],chain[N-1].vec_r[1],chain[N-1].vec_r[2]);
 }
 
 void Conformation::cleanForces(){
