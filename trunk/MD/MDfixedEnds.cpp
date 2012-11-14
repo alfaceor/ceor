@@ -119,10 +119,10 @@ int main(int argc, char* argv[]) {
 
 		protein.print_pdb_conformation(fp_pdb,-2);
 		ttime=0;
-		protein.displace(-protein.chain[0].vec_r[0],-protein.chain[0].vec_r[1],-protein.chain[0].vec_r[2]);
+		//protein.displace(-protein.chain[0].vec_r[0],-protein.chain[0].vec_r[1],-protein.chain[0].vec_r[2]);
 		protein.print_pdb_conformation(fp_pdb,-1);
 		// calcular el angulo a rotar en polar
-		//protein.alingWithDaxis();
+		protein.alingWithDaxis();
 
 		protein.print_pdb_conformation(fp_pdb,0);
 
