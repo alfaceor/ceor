@@ -52,7 +52,7 @@ void shell_compress_pdbfiles(char *filename_pattern){
 int main(int argc, char* argv[]) {
 	// input parameters
 	if(argc != 12){
-		printf("Usage: MD [rev_prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each] [Drate] [Dfin]\n");
+		printf("Usage: MD [rev_prefix] [chain] [temperature] [total_time] [dt] [epsi] [q] [Ec] [print_each] [Dfin] [Drate]\n");
 		return EXIT_FAILURE;
 	}
 
@@ -67,8 +67,9 @@ int main(int argc, char* argv[]) {
 	double q	=	atof(argv[7]); //0.1;
 	double Ec	=	atof(argv[8]); //-1.0;
 	int print_each	=	atoi(argv[9]);
-	double Drate	=	atof(argv[10]); // 1
-	double Dfin	= atof(argv[11]);//1.0;
+	double Dfin	= atof(argv[10]);//1.0;
+	double Drate	=	atof(argv[11]); // 1
+
 
 	char filename_pattern[100];
 	char filename_pdb[100];
@@ -103,20 +104,6 @@ int main(int argc, char* argv[]) {
 	seed = time(NULL); // Get the time of the system as seed
 	gsl_rng_set(r,seed);
 
-	/*
-	// FIXME: make a better version for the minimun D
-	// total simulation until get the minimun D
-	for(int i=0; i<2; i++){
-		// To avoid creation of empty files
-		if (protein.D < Dfin){
-			break;
-		}
-		// create number sufix
-		char tmpnum[4];
-		if (i<10) sprintf (tmpnum, "_00%d", i);
-		else if(i<100) sprintf (tmpnum, "_0%d", i);
-		else sprintf (tmpnum, "_%d", i);
-*/
 		// copy the filename pattern
 		strcpy(filename_pdb,filename_pattern);
 		strcpy(filename_dat,filename_pattern);
@@ -135,12 +122,12 @@ int main(int argc, char* argv[]) {
 		ttime	= 0;
 		// Disminuye el valor de D
 		if ( Dini > Dfin ){
-			if (Drate > 0){
+			if (Drate > 0){ // If the Drate is positive then the D value will be decrease
 				// Run the program
 				while(protein.D > Dfin){ // D must decrease
 					protein.calculateTotalForces(epsi,q,Ec);
-					protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
-					protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
+					protein.actualizePositionsFixedEnds(dt);
+					protein.addPosition3DNoiseFixedEnds(dt,temp,r);
 					protein.actualizeVelocitiesFixedEnds(dt);
 					protein.calculateTotalEnergy(epsi,q,Ec);
 					protein.set_D_to(protein.D - Drate*dt);
@@ -152,6 +139,23 @@ int main(int argc, char* argv[]) {
 					}
 					ttime++;
 				}
+
+				// TODO: there must be a more efficient way to do that.
+				// With this part of code the protein will end with D = Dfin
+				protein.set_D_to(Dfin);
+
+				protein.calculateTotalForces(epsi,q,Ec);
+				protein.actualizePositionsFixedEnds(dt);
+				protein.addPosition3DNoiseFixedEnds(dt,temp,r);
+				protein.actualizeVelocitiesFixedEnds(dt);
+				protein.calculateTotalEnergy(epsi,q,Ec);
+				ttime++;
+
+				protein.print_pdb_conformation(fp_pdb,ttime);
+				protein.calculateRg();
+
+				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+
 			} else{
 				printf("Bad paramaters: Drate must be POSITIVE\n");
 				return EXIT_FAILURE;
@@ -161,8 +165,8 @@ int main(int argc, char* argv[]) {
 				// Run the program
 				while(protein.D < Dfin){ // D must increase until reach Dfin
 					protein.calculateTotalForces(epsi,q,Ec);
-					protein.actualizePositionsFixedEnds(dt);		// FIXME: fix positions to the ends
-					protein.addPosition3DNoiseFixedEnds(dt,temp,r);	// FIXME: remove ends from perturbation
+					protein.actualizePositionsFixedEnds(dt);
+					protein.addPosition3DNoiseFixedEnds(dt,temp,r);
 					protein.actualizeVelocitiesFixedEnds(dt);
 					protein.calculateTotalEnergy(epsi,q,Ec);
 					protein.set_D_to(protein.D - Drate*dt);
@@ -174,6 +178,22 @@ int main(int argc, char* argv[]) {
 					}
 					ttime++;
 				}
+				// TODO: there must be a more efficient way to do that.
+				// With this part of code the protein will end with D = Dfin
+				protein.set_D_to(Dfin);
+
+				protein.calculateTotalForces(epsi,q,Ec);
+				protein.actualizePositionsFixedEnds(dt);
+				protein.addPosition3DNoiseFixedEnds(dt,temp,r);
+				protein.actualizeVelocitiesFixedEnds(dt);
+				protein.calculateTotalEnergy(epsi,q,Ec);
+				ttime++;
+
+				protein.print_pdb_conformation(fp_pdb,ttime);
+				protein.calculateRg();
+
+				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+
 
 			} else{
 				printf("Bad paramaters: Drate must be NEGATIVE\n");
