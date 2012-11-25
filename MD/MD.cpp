@@ -72,12 +72,15 @@ int main(int argc, char* argv[]) {
 	seed = time(NULL); // Get the time of the system as seed
 	gsl_rng_set(r,seed);
 
+	protein.alingWithDaxis();
 	while(ttime<total_time){
 		protein.calculateTotalForces(epsi,q,Ec);
-		protein.actualizePositions(dt);
-		protein.addPosition3DNoise(dt,temp,r);
-		protein.actualizeVelocities(dt);
+		protein.actualizePositionsFixedEnds(dt);
+		protein.addPosition3DNoiseFixedEnds(dt,temp,r);
+		protein.actualizeVelocitiesFixedEnds(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
+
+		// TODO: Solo voy a hacer oscilar un extremo
 
 		if (ttime % print_each == 0){
 			protein.print_pdb_conformation(fp_pdb,ttime);

@@ -30,8 +30,11 @@ public:
 	double CenterMass[DIM];
 	double D;				// End to End
 	double *deltaR2;
+	double *bin_dR2;	// Binarization of deltaR2
+			// cutoff for binarization (distance)
 	double Temperature;		// to get the temperature in Kelvin divide by Boltzmann constant
 	void calculateDeltaR2();
+	void binarizeDeltaR2(double dcutoff);
 	void calculateCenterMass();
 	void calculateRg();
 	void calculateD();
