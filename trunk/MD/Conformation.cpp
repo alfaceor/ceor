@@ -13,6 +13,7 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 	this->N = N;
 	this->chain		= new Monomer[N]();
 	this->deltaR2	= new double[N*N]();
+	this->bin_dR2	= new double[N*N]();
 	this->basename	= basename;
 	this->Energy	= 0.0;
 	this->KinecticEnergy =0.0;
@@ -74,6 +75,7 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 Conformation::~Conformation() {
 	// TODO Auto-generated destructor stub
 	delete deltaR2;
+	delete bin_dR2;
 }
 
 void Conformation::calculateDeltaR2(){
@@ -90,8 +92,30 @@ void Conformation::calculateDeltaR2(){
 	}
 }
 
+void Conformation::binarizeDeltaR2(double dcutoff){
+	double d2cutoff=dcutoff*dcutoff;
+	for (int k=0; k<N; k++){
+		for (int l=k; l<N; l++){
+			if (k == l){
+				bin_dR2[k*N+l]=0.0;
+			}
+			else{
+				if (d2cutoff < deltaR2[k*N+l]){
+					// No contact
+					bin_dR2[k*N+k]=0;
+				}else{
+					// there are in contact
+					bin_dR2[k*N+k]=0;
+				}
+			}
+			// contact matrix is symmetric
+			bin_dR2[l*N+k] = bin_dR2[k*N+l];
+		}
+	}
+}
+
 void Conformation::calculateCenterMass(){
-	CenterMass[0]=0.0;CenterMass[1]=0.0;CenterMass[2]=0.0;
+	CenterMass[0]=0.0; CenterMass[1]=0.0; CenterMass[2]=0.0;
 	for(int i=0; i<N; i++){
 		for(int d=0; d<DIM; d++){
 			CenterMass[d]+=chain[i].mass*chain[i].vec_r[d];

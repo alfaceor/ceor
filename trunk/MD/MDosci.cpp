@@ -6,6 +6,10 @@
 // Description : Molecular dynamics simulation
 //============================================================================
 
+/**
+ * Make a forced oscilation of one extreme of the chain
+ * */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -73,6 +77,7 @@ int main(int argc, char* argv[]) {
 	gsl_rng_set(r,seed);
 
 	while(ttime<total_time){
+		// TODO: Insert a oscilation force
 		protein.calculateTotalForces(epsi,q,Ec);
 		protein.actualizePositions(dt);
 		protein.addPosition3DNoise(dt,temp,r);
