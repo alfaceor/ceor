@@ -29,6 +29,10 @@ public:
 	double PRg;
 	double CenterMass[DIM];
 	double D;				// End to End
+	double HHcontacts;
+	double HPcontacts;
+	double PPcontacts;
+	double ALLcontacts;
 	double *deltaR2;
 	double *bin_dR2;	// Binarization of deltaR2
 			// cutoff for binarization (distance)
@@ -37,6 +41,7 @@ public:
 	void binarizeDeltaR2(double dcutoff);
 	void calculateCenterMass();
 	void calculateRg();
+	void calculateContacts();
 	void calculateD();
 	void set_D_to(double Dnew);
 	void calculateBondForces(double epsi, double q);
