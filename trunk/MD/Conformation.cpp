@@ -97,19 +97,46 @@ void Conformation::binarizeDeltaR2(double dcutoff){
 	for (int k=0; k<N; k++){
 		for (int l=k; l<N; l++){
 			if (k == l){
-				bin_dR2[k*N+l]=0.0;
+				bin_dR2[k*N+l]=0;
 			}
 			else{
 				if (d2cutoff < deltaR2[k*N+l]){
 					// No contact
-					bin_dR2[k*N+k]=0;
+					bin_dR2[k*N+l]=0;
 				}else{
 					// there are in contact
-					bin_dR2[k*N+k]=0;
+					bin_dR2[k*N+l]=1;
 				}
 			}
 			// contact matrix is symmetric
 			bin_dR2[l*N+k] = bin_dR2[k*N+l];
+		}
+	}
+}
+
+void Conformation::calculateContacts(){
+
+	HHcontacts = 0.0;
+	HPcontacts = 0.0;
+	PPcontacts = 0.0;
+	ALLcontacts = 0.0;
+
+	// Count matrix contacts by type HH,HP,PP,ALL
+	for (int k=0; k<N; k++){
+		for (int l=k; l<N; l++){
+			if( chain[k].hydro == -1 ){ // H_k
+				if ( chain[l].hydro == -1 ){ // H_l
+					HHcontacts += bin_dR2[k*N+l];
+				}else{ // P_l
+					HPcontacts += bin_dR2[k*N+l];
+				}
+			}else{ // P_k
+				if ( chain[l].hydro == -1 ){	// H_l
+					HPcontacts += bin_dR2[k*N+l];// HP = PH
+				}else{ // P_l
+					PPcontacts += bin_dR2[k*N+l]; // PP
+				}
+			}
 		}
 	}
 }
