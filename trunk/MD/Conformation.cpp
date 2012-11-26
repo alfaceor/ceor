@@ -139,6 +139,8 @@ void Conformation::calculateContacts(){
 			}
 		}
 	}
+
+	ALLcontacts = HHcontacts+HPcontacts+PPcontacts;
 }
 
 void Conformation::calculateCenterMass(){

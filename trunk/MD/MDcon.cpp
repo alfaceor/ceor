@@ -41,6 +41,7 @@ int main(int argc, char* argv[]) {
 	char strdcutoff[]="1.2";
 	double dcutoff = atof(strdcutoff); // cutoff for the Contact matrix
 
+	// TODO: Add fin file
 	char filename_pattern[90];
 	char filename_pdb[100];
 	char filename_dat[100];
@@ -79,8 +80,8 @@ int main(int argc, char* argv[]) {
 	fp_pdb = fopen(filename_pdb,"w");
 	fp_dat = fopen(filename_dat,"w");
 	fp_con = fopen(filename_con,"w");
-	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
-	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\n","time","HHcontacts", "HPcontacts", "PPcontacts", "ALLcontacts");
+	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "Z","HRg","PRg");
+	fprintf(fp_con,"#%s\t%s\t%s\t%s\t%s\n","time","HHcontacts", "HPcontacts", "PPcontacts", "ALLcontacts");
 	int ttime	= 0;
 
 	const gsl_rng_type *T; T = gsl_rng_default;
@@ -106,7 +107,7 @@ int main(int argc, char* argv[]) {
 
 			protein.binarizeDeltaR2(dcutoff);
 			protein.calculateContacts();
-			fprintf(fp_con,"%d\t%f\t%f\t%f\t%f",ttime, protein.HHcontacts, protein.HPcontacts, protein.PPcontacts, protein.ALLcontacts);
+			fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",ttime, protein.HHcontacts, protein.HPcontacts, protein.PPcontacts, protein.ALLcontacts);
 		}
 		ttime++;
 	}
