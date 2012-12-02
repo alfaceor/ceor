@@ -90,15 +90,21 @@ int main(int argc, char* argv[]) {
 	fp_con = fopen(filename_con,"w");
 	fp_seed = fopen(filename_seed,"w");
 
-	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "Z","HRg","PRg");
-	fprintf(fp_con,"#%s\t%s\t%s\t%s\t%s\n","time","HHcontacts", "HPcontacts", "PPcontacts", "ALLcontacts");
+	// FIXME: to save space in the hard disk i'm not printing Total Energy, KinecticEnergy, HRg, PRg
+	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\n",
+		"time", "PotentialEnergy", "Rg",
+		"Z","HRg","PRg");
+	fprintf(fp_con,"#%s\t%s\t%s\t%s\t%s\n",
+		"time","HHcontacts", "HPcontacts",
+		"PPcontacts", "ALLcontacts");
 	fprintf(fp_seed,"seed %lu\n",seed);
 
 	// ========> BEGIN Simulation -----------------
 	Conformation protein(M, hydroChain, temp, filename_ini);
-
 	int ttime	= 0;
-	protein.print_pdb_conformation(fp_pdb,ttime); // First Positions
+	int ttaux = total_time/10;
+	protein.print_pdb_unfoldedchain(fp_pdb); // First Positions just estetic function
+
 	while(ttime<total_time){
 		protein.calculateTotalForces(epsi,q,Ec);
 		protein.actualizePositions(dt);
@@ -106,15 +112,19 @@ int main(int argc, char* argv[]) {
 		protein.actualizeVelocities(dt);
 		protein.calculateTotalEnergy(epsi,q,Ec);
 
-		if (ttime % print_each == 0){
-
+		if ( ttime % print_each == 0 ){
 			protein.calculateRg();
 			protein.calculateD();
-			fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
-
-			protein.binarizeDeltaR2(dcutoff);
-			protein.calculateContacts();
-			fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",ttime, protein.HHcontacts, protein.HPcontacts, protein.PPcontacts, protein.ALLcontacts);
+			fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\n",
+				ttime, protein.PotentialEnergy, protein.Rg,
+				protein.D, protein.HRg, protein.PRg);
+			// FIXME: Review the number of contacts, something is WRONG!
+//			protein.binarizeDeltaR2(dcutoff);
+//			protein.calculateContacts();
+//			fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",
+//				ttime, protein.HHcontacts, protein.HPcontacts,
+//				protein.PPcontacts, protein.ALLcontacts);
+			if (ttime%ttaux==0) protein.print_pdb_conformation(fp_pdb,ttime);
 		}
 		ttime++;
 	}
@@ -130,8 +140,8 @@ int main(int argc, char* argv[]) {
 	fclose(fp_dat);
 	fclose(fp_con);
 	fclose(fp_seed);
-
-	printf("# END_SIMULATION %s %lu %lu\n",filename_pattern,seed,finaltime);
+	// first is printed the existence of an ini file
+	printf("%s # END_SIMULATION %lu %lu\n",filename_pattern,seed,finaltime);
 
 	return EXIT_SUCCESS;
 }

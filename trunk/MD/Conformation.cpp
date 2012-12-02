@@ -23,9 +23,9 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 	fp=fopen(basename,"r");
 	//FIXME: temporal flag remove later
 	if(fp==NULL){
-//	if(true){
-		printf("# filename= %s doesnt exist!\n",basename);
-		printf("# creating new file %s with random data...\n",basename);
+		printf("#inifile:False\t");
+		//printf("# filename= %s doesnt exist!\n",basename);
+		//printf("# creating new file %s with random data...\n",basename);
 		fp=fopen(basename,"w");
 
 		// randomPositions();
@@ -57,6 +57,7 @@ Conformation::Conformation(int N, char *hydroChain, double temp, char *basename)
 
 	}else{
 		// read a file input data
+		printf("#inifile:True\t");
 		for (int i=0; i<N; i++){
 			for (int d=0; d<DIM; d++){
 				fscanf(fp,"%lf",&this->chain[i].vec_r[d]);
@@ -96,10 +97,9 @@ void Conformation::binarizeDeltaR2(double dcutoff){
 	double d2cutoff=dcutoff*dcutoff;
 	for (int k=0; k<N; k++){
 		for (int l=k; l<N; l++){
-			if (k == l){
+			if (l == k || l == k+1){	// avoid chain contacts
 				bin_dR2[k*N+l]=0;
-			}
-			else{
+			}else{
 				if (d2cutoff < deltaR2[k*N+l]){
 					// No contact
 					bin_dR2[k*N+l]=0;
@@ -536,6 +536,23 @@ void Conformation::print_pdb_conformation(FILE *fp,int time_model){
 		print_pdb_line(fp,i+1,chain[i].vec_r[0],chain[i].vec_r[1],chain[i].vec_r[2],name,chain[i].vec_v[0]);
 	}
 	fprintf(fp,"ENDMDL\n");
+	printf("ttime=%d\n",time_model);
+}
+
+void Conformation::print_pdb_unfoldedchain(FILE *fp){
+	char name[]="    ";
+	int time_model = -1;
+	fprintf(fp,"MODEL\t%d\n",time_model);
+	for (int i=0;i<N;i++){
+		if(chain[i].hydro == 1){	name[0]='Z';name[1]='n';}
+		else{				name[0]='N';name[1]=' ';}
+		// Chain in x axis and in corresponding positions
+		// The propose of this is just make the first pdb
+		// model to a good view in vmd (visualization program)
+		print_pdb_line(fp,i+1,chain[i].zigma*i, 0.0, 0.0,name,chain[i].vec_v[0]);
+	}
+	fprintf(fp,"ENDMDL\n");
+	printf("ttime=%d\n",time_model);
 }
 
 void Conformation::print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *name,double tempFactor){
