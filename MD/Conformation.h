@@ -76,6 +76,7 @@ public:
 	void nextStep();	// time evolution, TODO: CLEAN force value
 	void print_r();		// Print data
 	void print_pdb_conformation(FILE *fp, int time_model);
+	void print_pdb_unfoldedchain(FILE *fp);
 //	void print_pdbfile(char *filename);
 	void print_pdb_line(FILE *fp,int serial, double x, double y, double z,char *resName,double tempFactor);
 
