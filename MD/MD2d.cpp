@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
 	// ========> BEGIN Simulation -----------------
 	Conformation protein(M, hydroChain, temp, filename_ini);
 	int ttime	= 0;
-	int ttaux = total_time/10;
+	int ttaux = total_time/100;
 	protein.print_pdb_unfoldedchain(fp_pdb); // First Positions just estetic function
 
 	while(ttime<total_time){
@@ -119,13 +119,14 @@ int main(int argc, char* argv[]) {
 				ttime, protein.PotentialEnergy, protein.Rg,
 				protein.D, protein.HRg, protein.PRg);
 			// FIXME: Review the number of contacts, something is WRONG!
-//			protein.binarizeDeltaR2(dcutoff);
-//			protein.calculateContacts();
-//			fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",
-//				ttime, protein.HHcontacts, protein.HPcontacts,
-//				protein.PPcontacts, protein.ALLcontacts);
-			if (ttime%ttaux==0) protein.print_pdb_conformation(fp_pdb,ttime);
+			protein.binarizeDeltaR2(dcutoff);
+			protein.calculateContacts();
+			fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",
+				ttime, protein.HHcontacts, protein.HPcontacts,
+				protein.PPcontacts, protein.ALLcontacts);
+
 		}
+		if (ttime%ttaux==0) protein.print_pdb_conformation(fp_pdb,ttime);
 		ttime++;
 	}
 	protein.print_pdb_conformation(fp_pdb,ttime); // last positions
