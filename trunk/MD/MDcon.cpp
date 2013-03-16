@@ -80,6 +80,7 @@ int main(int argc, char* argv[]) {
 	fp_pdb = fopen(filename_pdb,"w");
 	fp_dat = fopen(filename_dat,"w");
 	fp_con = fopen(filename_con,"w");
+
 	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "Z","HRg","PRg");
 	fprintf(fp_con,"#%s\t%s\t%s\t%s\t%s\n","time","HHcontacts", "HPcontacts", "PPcontacts", "ALLcontacts");
 	int ttime	= 0;
