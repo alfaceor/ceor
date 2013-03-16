@@ -84,6 +84,7 @@ int main(int argc, char* argv[]) {
 			protein.print_pdb_conformation(fp_pdb,ttime);
 			protein.calculateRg();
 			protein.calculateD();
+			printf("%f\t",protein.deltaR2[(M/2)*M+0]); 	// a distancia entre a posição zero e a N/2
 			fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
 		}
 		ttime++;

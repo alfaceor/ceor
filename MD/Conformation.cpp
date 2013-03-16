@@ -82,7 +82,7 @@ Conformation::~Conformation() {
 void Conformation::calculateDeltaR2(){
 	double auxdelta;
 	for (int k=0; k<N; k++){
-		for (int l=0; l<N; l++){
+		for (int l=k; l<N; l++){
 			deltaR2[k*N+l] = 0.0;
 			for (int d=0;d<DIM;d++){
 				auxdelta = (chain[k].vec_r[d] - chain[l].vec_r[d]);

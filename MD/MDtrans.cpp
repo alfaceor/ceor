@@ -70,14 +70,19 @@ int main(int argc, char* argv[]) {
 	double Dfin	= atof(argv[10]);//1.0;
 	double Drate	=	atof(argv[11]); // 1
 
+	// FIXME: find a better way to put the cutoff
+	char strdcutoff[]="1.2";
+	double dcutoff = atof(strdcutoff); // cutoff for the Contact matrix
 
 	char filename_pattern[100];
 	char filename_pdb[100];
 	char filename_dat[100];
 	char filename_ini[100];
+	char filename_con[100];
 	char ext_pdb[]=".pdb";
 	char ext_dat[]=".dat";
 	char ext_ini[]=".ini";
+	char ext_con[]=".con";
 
 	strcpy(filename_pattern,prefix_file);
 	for (int i=2;i<argc;i++){ // Don't print the Drate, Dfin
@@ -104,115 +109,118 @@ int main(int argc, char* argv[]) {
 	seed = time(NULL); // Get the time of the system as seed
 	gsl_rng_set(r,seed);
 
-		// copy the filename pattern
-		strcpy(filename_pdb,filename_pattern);
-		strcpy(filename_dat,filename_pattern);
+	// copy the filename pattern
+	strcpy(filename_pdb,filename_pattern);
+	strcpy(filename_dat,filename_pattern);
+	strcpy(filename_con,filename_pattern);
 
-		// add number sufix, transition sufix and file extension
-		strcat(filename_pdb,ext_pdb);
-		strcat(filename_dat,ext_dat);
+	// add number sufix, transition sufix and file extension
+	strcat(filename_pdb,ext_pdb);
+	strcat(filename_dat,ext_dat);
 
-		// open files to write data
-		FILE *fp_pdb, *fp_dat;
-		fp_pdb = fopen(filename_pdb,"w");
-		fp_dat = fopen(filename_dat,"w");
+	strcat(filename_con,"_d-");
+	strcat(filename_con,strdcutoff);	//FIXME: dcutoff as string
+	strcat(filename_con,ext_con);
 
-		fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "D","HRg","PRg");
+	// open files to write data
+	FILE *fp_pdb, *fp_dat,*fp_con;
+	fp_pdb = fopen(filename_pdb,"w");
+	fp_dat = fopen(filename_dat,"w");
+	fp_con = fopen(filename_con,"w");
 
-		ttime	= 0;
-		// Disminuye el valor de D
-		if ( Dini > Dfin ){
-			if (Drate > 0){ // If the Drate is positive then the D value will be decrease
-				// Run the program
-				while(protein.D > Dfin){ // D must decrease
-					protein.calculateTotalForces(epsi,q,Ec);
-					protein.actualizePositionsFixedEnds(dt);
-					protein.addPosition3DNoiseFixedEnds(dt,temp,r);
-					protein.actualizeVelocitiesFixedEnds(dt);
-					protein.calculateTotalEnergy(epsi,q,Ec);
-					protein.set_D_to(protein.D - Drate*dt);
+	protein.alingWithDaxis();
 
-					if (ttime % print_each == 0){
-						protein.print_pdb_conformation(fp_pdb,ttime);
-						protein.calculateRg();
-						fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
-					}
-					ttime++;
-				}
-
-				// TODO: there must be a more efficient way to do that.
-				// With this part of code the protein will end with D = Dfin
-				protein.set_D_to(Dfin);
-
+	fprintf(fp_dat,"#%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n","time","Energy", "KinecticEnergy", "PotentialEnergy", "Rg", "Z","HRg","PRg");
+	fprintf(fp_con,"#%s\t%s\t%s\t%s\t%s\n","time","HHcontacts", "HPcontacts", "PPcontacts", "ALLcontacts");
+	ttime	= 0;
+	// Disminuye el valor de D
+	if ( Dini > Dfin ){
+		if (Drate > 0){ // If the Drate is positive then the D value will be decrease
+			// Run the program
+			while(protein.D > Dfin){ // D must decrease
 				protein.calculateTotalForces(epsi,q,Ec);
 				protein.actualizePositionsFixedEnds(dt);
 				protein.addPosition3DNoiseFixedEnds(dt,temp,r);
 				protein.actualizeVelocitiesFixedEnds(dt);
 				protein.calculateTotalEnergy(epsi,q,Ec);
-				ttime++;
+				protein.set_D_to(protein.D - Drate*dt);
 
-				protein.print_pdb_conformation(fp_pdb,ttime);
-				protein.calculateRg();
+				if (ttime % print_each == 0){
+					protein.print_pdb_conformation(fp_pdb,ttime);
+					protein.calculateRg();
+					fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
 
-				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+					protein.binarizeDeltaR2(dcutoff);
+					protein.calculateContacts();
+					fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",ttime, protein.HHcontacts, protein.HPcontacts, protein.PPcontacts, protein.ALLcontacts);
 
-			} else{
-				printf("Bad paramaters: Drate must be POSITIVE\n");
-				return EXIT_FAILURE;
-			}
-		} else if ( Dini < Dfin ){	// Aumenta el valor de D
-			if (Drate < 0){
-				// Run the program
-				while(protein.D < Dfin){ // D must increase until reach Dfin
-					protein.calculateTotalForces(epsi,q,Ec);
-					protein.actualizePositionsFixedEnds(dt);
-					protein.addPosition3DNoiseFixedEnds(dt,temp,r);
-					protein.actualizeVelocitiesFixedEnds(dt);
-					protein.calculateTotalEnergy(epsi,q,Ec);
-					protein.set_D_to(protein.D - Drate*dt);
-
-					if (ttime % print_each == 0){
-						protein.print_pdb_conformation(fp_pdb,ttime);
-						protein.calculateRg();
-						fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
-					}
-					ttime++;
 				}
-				// TODO: there must be a more efficient way to do that.
-				// With this part of code the protein will end with D = Dfin
-				protein.set_D_to(Dfin);
+				ttime++;
+			}
 
+		} else{
+			printf("Bad paramaters: Drate must be POSITIVE\n");
+			return EXIT_FAILURE;
+		}
+	} else if ( Dini < Dfin ){	// Aumenta el valor de D
+		if (Drate < 0){
+			// Run the program
+			while(protein.D < Dfin){ // D must increase until reach Dfin
 				protein.calculateTotalForces(epsi,q,Ec);
 				protein.actualizePositionsFixedEnds(dt);
 				protein.addPosition3DNoiseFixedEnds(dt,temp,r);
 				protein.actualizeVelocitiesFixedEnds(dt);
 				protein.calculateTotalEnergy(epsi,q,Ec);
+				protein.set_D_to(protein.D - Drate*dt);
+
+				if (ttime % print_each == 0){
+					protein.print_pdb_conformation(fp_pdb,ttime);
+					protein.calculateRg();
+					fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+					protein.binarizeDeltaR2(dcutoff);
+					protein.calculateContacts();
+					fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",ttime, protein.HHcontacts, protein.HPcontacts, protein.PPcontacts, protein.ALLcontacts);
+
+				}
 				ttime++;
-
-				protein.print_pdb_conformation(fp_pdb,ttime);
-				protein.calculateRg();
-
-				fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
-
-
-			} else{
-				printf("Bad paramaters: Drate must be NEGATIVE\n");
-				return EXIT_FAILURE;
 			}
+
+		} else{
+			printf("Bad paramaters: Drate must be NEGATIVE\n");
+			return EXIT_FAILURE;
 		}
-		else{
-			printf("fuck u!!");
-		}
+	}
+	else{
+		printf("fuck u!!");
+	}
 
-		// close transition files
-		fclose(fp_pdb);
-		fclose(fp_dat);
+	// TODO: there must be a more efficient way to do that.
+	// With this part of code the protein will end with D = Dfin
+	protein.set_D_to(Dfin);
 
-		// time evolution plot
-		// pyplot_time_evolution(filename_dat);
-		//pyplot_transition_matrix(filename_dat);
+	protein.calculateTotalForces(epsi,q,Ec);
+	protein.actualizePositionsFixedEnds(dt);
+	protein.addPosition3DNoiseFixedEnds(dt,temp,r);
+	protein.actualizeVelocitiesFixedEnds(dt);
+	protein.calculateTotalEnergy(epsi,q,Ec);
+	ttime++;
 
+	protein.print_pdb_conformation(fp_pdb,ttime);
+	protein.calculateRg();
 
+	fprintf(fp_dat,"%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n",ttime,protein.Energy, protein.KinecticEnergy, protein.PotentialEnergy, protein.Rg, protein.D, protein.HRg, protein.PRg);
+
+	protein.binarizeDeltaR2(dcutoff);
+	protein.calculateContacts();
+	fprintf(fp_con,"%d\t%f\t%f\t%f\t%f\n",ttime, protein.HHcontacts, protein.HPcontacts, protein.PPcontacts, protein.ALLcontacts);
+	// close transition files
+	fclose(fp_pdb);
+	fclose(fp_dat);
+	fclose(fp_con);
+
+	// time evolution plot
+	// pyplot_time_evolution(filename_dat);
+	//pyplot_transition_matrix(filename_dat);
 	printf("# END SIMULATION\n");
 	//shell_compress_pdbfiles(filename_pattern);
 
