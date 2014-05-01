@@ -22,7 +22,7 @@ yt_service.developer_key='AI39si6c1zCpV6asOC4hLdel_Df__enFJxHcgJrdnBrTcTyO81PLq0
 #yt_service.client_id='ceor_s example'
 yt_service.ProgrammaticLogin()
 
-my_media_group = gdata.media.Group(title=gdata.media.Title(text='My Test Movie'),description=gdata.media.Description(description_type='plain',text='My description'),keywords=gdata.media.Keywords(text='cars, funny'),category=gdata.media.Category(text='Autos',scheme='http://gdata.youtube.com/schemas/2007/categories.cat',label='Autos'),player=None )
+my_media_group = gdata.media.Group(title=gdata.media.Title(text='My Test Movie'),description=gdata.media.Description(description_type='plain',text='My description'),keywords=gdata.media.Keywords(text='acecom videos'),category=gdata.media.Category(text='python',scheme='http://gdata.youtube.com/schemas/2007/categories.cat',label='python'),player=None )
 
 
 where = gdata.geo.Where()
