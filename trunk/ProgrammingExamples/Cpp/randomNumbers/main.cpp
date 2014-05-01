@@ -37,27 +37,30 @@ int main(int argc, char* argv[]) {
 	}
 	int N=atoi(argv[1]);
 	double sigma=atof(argv[2]);
-	generate2randomNumbers(N,sigma);
+//	generate2randomNumbers(N,sigma);
 
 	const gsl_rng_type * T1;
 	gsl_rng *r1;
 //	gsl_rng_env_setup();
 	unsigned long int seed;
-	seed = time (NULL); // * getpid();   // FIXME: SEED 
+	time_t tiempo = time (NULL); // * getpid();
+  //seed = (unsigned) tiempo;
+  seed = (long unsigned int) time(NULL);
 	//seed=10;
-	
+	printf("%d\n",seed);
+
+	printf("------------\n");
 	T1	= gsl_rng_default;
 	r1	= gsl_rng_alloc(T1);
 	gsl_rng_set(r1, seed);                  // set seed
+  /*
 	printf("generator type: %s\n", gsl_rng_name(r1));
 	printf("seed = %lu\n",gsl_rng_default_seed);
 	printf ("first value = %lu\n", gsl_rng_get (r1));
-
+*/
 	for (int i=0; i<N; i++){
 		generateRandomNumber(r1,sigma);
 	}
-
-	printf("------------\n");
 
 	gsl_rng_free(r1);
 }

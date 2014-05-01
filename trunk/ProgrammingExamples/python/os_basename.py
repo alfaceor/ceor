@@ -1,6 +1,7 @@
 import os
-filename=os.path.splitext(os.path.basename('/home/alfaceor/rev_chain_temp.dat'))[0]
+filename=os.path.splitext(os.path.basename('66_22_1000100010001_0.04_20000000_0.001_1.0_0.13_-1.0_100.dat'))[0]
 print filename
-filename.split('_')
-for i in filename.split('_'):
-  print i
+print '-'*10
+rev, njobs, chain, temperature, ttime, dt, epsi, q, Ec, print_each =filename.split('_')
+
+print chain
